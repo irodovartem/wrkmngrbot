@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Рабочий таймер</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#0a0a0c;--s1:#131316;--s2:#1c1c21;--line:rgba(255,255,255,.07);--tx:#f3f3f5;--mut:#8a8a94;--dim:#4d4d56;--acc:#4a8cff;--acc-tx:#ffffff;--red:#ff5d5d;--amb:#ffb648;--mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace}
+html{color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,textarea,select{font-size:16px!important}
+body{margin:0;position:fixed;inset:0;background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+:root{--top:0px;--bot:max(env(safe-area-inset-bottom),var(--tgb,0px))}
+#app{position:absolute;top:var(--top);left:0;right:0;bottom:calc(64px + var(--bot));overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 16px 28px}
+h2{margin:22px 0 10px;font-size:26px;font-weight:700;letter-spacing:-.02em}
+h3{margin:0 0 10px;font-size:15px;font-weight:600}
+.lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0}
+.center{text-align:center}
+.hint{color:var(--mut);font-size:13px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0}
+.line+.line{border-top:1px solid var(--line)}
+.line>span:last-child{white-space:nowrap}
+select{width:100%;padding:12px 14px;border-radius:12px;border:0;background:var(--s2);color:var(--tx);font:inherit;margin:4px 0 8px}
+input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid transparent;background:var(--s2);color:var(--tx);font:inherit;margin:4px 0 8px}
+input:focus,textarea:focus{outline:none;border-color:rgba(74,140,255,.5)}
+input::placeholder{color:var(--dim)}
+textarea{font:12px/1.5 var(--mono);min-height:260px;color:var(--mut)}
+.btn{width:100%;padding:14px;border:0;border-radius:14px;background:var(--acc);color:var(--acc-tx);font:inherit;font-weight:600;margin:4px 0}
+.btn:active,.item:active,.go:active{transform:scale(.98)}
+.btn.alt{background:var(--s2);color:var(--tx)}
+.btn.ok{background:var(--acc);color:var(--acc-tx)}
+.btn.warn{background:transparent;color:var(--amb);border:1px solid rgba(255,182,72,.4)}
+.btn.del,.btn.end{background:transparent;color:var(--red);border:1px solid rgba(255,93,93,.3)}
+.btn.sm{width:auto;padding:12px 16px;margin:4px 0 8px}
+.two{display:flex;gap:8px}.two .btn{flex:1}
+.inl{display:flex;gap:8px;align-items:center}
+.inl input{flex:1;min-width:0}
+.hero{min-height:100%;display:flex;flex-direction:column;padding-bottom:14px}
+.hero-top{padding:18px 60px 0 2px}
+.greet{font-size:clamp(24px,3.8vh,30px);font-weight:700;letter-spacing:-.02em;margin-top:6px}
+.hero-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(18px,4.5vh,48px) 0 clamp(18px,4.5vh,44px)}
+.go{position:relative;display:grid;place-items:center;width:clamp(160px,28vh,220px);height:clamp(160px,28vh,220px);border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#8db8ff,var(--acc) 60%);color:var(--acc-tx);font:inherit;font-size:26px;font-weight:700;letter-spacing:-.01em;box-shadow:0 0 0 12px rgba(74,140,255,.06),0 28px 80px rgba(74,140,255,.2);transition:transform .15s}
+.go::before,.go::after{content:'';position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(74,140,255,.35);animation:ripple 3.6s ease-out infinite;pointer-events:none}
+.go::after{animation-delay:1.8s}
+@keyframes ripple{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.32);opacity:0}}
+.go-cap{margin-top:clamp(24px,5vh,46px);text-align:center}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);background:var(--s1);border:1px solid var(--line);border-radius:20px}
+.trio>div{padding:16px 6px 14px;text-align:center}
+.trio>div+div{border-left:1px solid var(--line)}
+.trio .v{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-bottom:2px}
+.link{display:block;margin:16px auto 0;border:0;background:none;color:var(--mut);font:inherit;font-size:14px;padding:10px 14px}
+@media (prefers-reduced-motion:reduce){.go::before,.go::after{animation:none}}
+.clock{font-family:var(--mono);font-size:46px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.ringwrap{position:relative;width:256px;height:256px;margin:22px auto 8px}
+.ringwrap svg{display:block}
+.ringwrap .in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;flex:none}
+.dot.live{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.item{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:var(--s2);color:var(--tx);font:inherit;padding:13px 14px;border-radius:14px;margin:6px 0}
+.pcard{display:block;width:100%;text-align:left;color:var(--tx);font:inherit;cursor:pointer}
+.badge{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--s2);color:var(--mut);font-weight:500;vertical-align:middle}
+.badge.wait{background:rgba(255,182,72,.12);color:var(--amb);white-space:nowrap}
+.badge.done{background:rgba(74,140,255,.12);color:var(--acc)}
+.big{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.grid .card{margin:0}
+.kpi .v{font-family:var(--mono);font-size:21px;font-weight:600;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.seg{display:flex;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:4px;margin:16px 0 10px}
+.seg button{flex:1;border:0;background:none;color:var(--mut);font:inherit;padding:8px;border-radius:10px}
+.seg button.on{background:var(--s2);color:var(--tx)}
+.per{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.per b{font-weight:600;text-transform:capitalize}
+.per button{border:1px solid var(--line);background:var(--s1);color:var(--tx);font:inherit;font-size:18px;width:42px;height:38px;border-radius:12px}
+.task{padding:12px 0}
+.task+.task{border-top:1px solid var(--line)}
+.task.d .tn{text-decoration:line-through;color:var(--mut)}
+.ib{border:0;background:var(--s2);color:var(--tx);font:inherit;border-radius:10px;padding:7px 11px;margin-left:4px}
+.ib.play{background:var(--acc);color:var(--acc-tx)}
+.pen{border:0;background:none;color:var(--dim);font-size:14px;padding:2px 6px}
+details summary{color:var(--mut);font-size:13px;cursor:pointer;margin-top:6px;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:'+ '}
+details[open] summary::before{content:'− '}
+details.sw{margin:4px 0 8px}
+details.sw summary{text-align:center;padding:8px}
+.ftabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 10px;padding:2px 16px}
+.ftabs::-webkit-scrollbar,.pager::-webkit-scrollbar{display:none}
+.ftab{flex:none;border:1px solid var(--line);background:var(--s1);color:var(--mut);font:inherit;font-size:14px;padding:8px 14px;border-radius:20px;white-space:nowrap}
+.ftab span{font-family:var(--mono);font-size:12px;color:var(--dim);margin-left:6px}
+.ftab.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.ftab.on span{color:var(--bg);opacity:.55}
+.pager{overflow:hidden;margin:0 -16px;touch-action:pan-y;transition:height .3s ease}
+.track{display:flex;align-items:flex-start;transition:transform .34s cubic-bezier(.22,.8,.24,1);will-change:transform}
+.page{flex:0 0 100%;min-width:0;padding:0 16px}
+.gear{position:absolute;top:18px;right:16px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--s1);color:var(--mut);display:grid;place-items:center;padding:0;z-index:5}
+.gear svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gear:active{transform:scale(.94)}
+.tgl{position:relative;width:48px;height:28px;flex:none}
+.tgl input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;z-index:1}
+.tgl i{position:absolute;inset:0;background:var(--s2);border-radius:14px;transition:background .2s}
+.tgl i::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--mut);transition:left .2s,background .2s}
+.tgl input:checked+i{background:var(--acc)}
+.tgl input:checked+i::after{left:23px;background:var(--acc-tx)}
+.errbar{position:fixed;left:12px;right:12px;top:calc(10px + var(--top) + env(safe-area-inset-top));z-index:50;background:#3a1416;color:#ffb3b3;border:1px solid rgba(255,93,93,.4);border-radius:14px;padding:12px 14px;font-size:13px}
+.mback{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + var(--bot));opacity:0;transition:opacity .18s}
+.mback.on{opacity:1}
+.modal{width:100%;max-width:420px;background:var(--s1);border:1px solid var(--line);border-radius:22px;padding:20px 16px 12px;transform:translateY(20px);transition:transform .2s}
+.mback.on .modal{transform:none}
+.mmsg{white-space:pre-line;font-size:16px;line-height:1.45;margin:0 4px 16px}
+.mbtns{display:flex;gap:8px}.mbtns .btn{flex:1;margin:0}
+.btn.danger{background:var(--red);color:#fff}
+.tf{display:flex;align-items:center;gap:6px;background:var(--s2);border-radius:12px;padding:0 0 0 12px;margin:4px 0 8px;border:1px solid transparent}
+.tf:focus-within{border-color:rgba(74,140,255,.5)}
+.tf span{color:var(--mut);white-space:nowrap;font-size:15px}
+.tf input{margin:0;border:0;background:none;padding-left:4px}
+.tf input:focus{border:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;gap:2px;font-size:12px;padding:3px 9px;border-radius:20px;background:var(--s2);color:var(--mut);white-space:nowrap}
+.cpk{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.cpk button{width:30px;height:30px;border-radius:50%;border:0;padding:0;box-shadow:0 0 0 2px var(--s1)}
+.cpk button.on{box-shadow:0 0 0 2px var(--s1),0 0 0 4px var(--tx)}
+details.cdet summary{display:flex;justify-content:space-between;align-items:center;margin:0;color:inherit}
+details.cdet summary::before{content:none}
+details.cdet summary::after{content:'›';color:var(--dim);font-size:20px;line-height:1;transition:transform .2s}
+details.cdet[open] summary::after{transform:rotate(90deg)}
+details.cdet summary .dot{margin:0 10px 0 auto}
+.trow{position:relative;margin:6px 0;border-radius:14px;overflow:hidden;touch-action:pan-y}
+.tsw{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:600;font-size:14px;opacity:0;background:var(--s2);border-radius:14px}
+.trow.sw-on .tsw{opacity:1}.tsw .l{color:var(--acc)}.tsw .r{color:var(--amb)}
+.tfg{position:relative;display:flex;align-items:center;gap:10px;padding:11px 10px 11px 12px;background:var(--s1);border:1px solid var(--line);border-radius:14px;transition:transform .22s ease}
+.trow.ed .tsw{display:none}
+.trow.ed .tfg{border-radius:14px 14px 0 0;border-bottom:0}
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--dim);background:none;flex:none;padding:0;color:#fff;font-size:13px;line-height:20px}
+.chk.on{background:var(--acc);border-color:var(--acc)}
+.tmain{flex:1;min-width:0;cursor:pointer}.ttl{word-break:break-word}.trow.dn .ttl{color:var(--mut);text-decoration:line-through}
+.tmeta{font-size:12px;color:var(--mut);margin-top:3px;display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center}
+.due{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--s2);color:var(--mut);white-space:nowrap;vertical-align:1px}
+.due.over{background:rgba(255,93,93,.14);color:var(--red)}.due.today{background:rgba(74,140,255,.16);color:var(--acc)}
+.star{border:0;background:none;color:var(--dim);font-size:19px;padding:4px 2px;line-height:1}.star.on{color:var(--amb)}
+.ted{position:relative;background:var(--s1);border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;padding:4px 12px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips button{border:1px solid var(--line);background:var(--s2);color:var(--tx);font:inherit;font-size:13px;padding:7px 11px;border-radius:10px}
+.chips button.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
+.tgrp{margin:18px 0 2px 4px;display:flex;justify-content:space-between}
+.cdot{width:18px;height:18px;border-radius:50%;border:0;padding:0;vertical-align:-3px;margin-right:8px}
+.tag button{border:0;background:none;color:inherit;opacity:.7;font-size:11px;padding:0 0 0 4px}
+.lg{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
+.acbox{position:fixed;z-index:70;background:#1a1a20;border:1px solid var(--line);border-radius:12px;max-height:220px;overflow:auto;box-shadow:0 12px 32px rgba(0,0,0,.5);padding:4px}
+.aci{padding:11px 12px;border-radius:9px;cursor:pointer}
+.aci b{color:var(--acc);font-weight:600}
+.aci.on,.aci:hover{background:var(--s2)}
+.x{border:0;background:none;color:var(--dim);font-size:16px;padding:4px 8px}
+a.back{color:var(--mut);text-decoration:none;display:inline-block;margin-top:16px;font-size:14px}
+.top{color:var(--acc)}.low{color:var(--red)}
+.hbar{height:5px;border-radius:3px;background:var(--s2);overflow:hidden;margin-top:8px}
+.hbar i{display:block;height:100%;border-radius:3px}
+.stack{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin:12px 0 10px;background:var(--s2)}
+.tl{position:relative;height:12px;background:var(--s2);border-radius:4px;overflow:hidden;margin:12px 0 6px}
+.tl i{position:absolute;top:0;bottom:0}
+.cols{display:flex;align-items:flex-end;gap:3px;height:110px;margin-top:14px}
+.cols .c{flex:1;position:relative;height:100%}
+.cols .c b,.cols .c i{position:absolute;bottom:0;left:0;right:0;border-radius:3px 3px 1px 1px}
+.cols .c b{background:#5c5c6e}
+.cols .c i{background:var(--acc)}
+.axis{display:flex;gap:3px;margin-top:6px}
+.axis span{flex:1;text-align:center;font-size:10px;color:var(--dim);font-family:var(--mono);overflow:visible;white-space:nowrap}
+.leg{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--mut)}
+.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+nav{position:absolute;left:0;right:0;bottom:0;height:calc(64px + var(--bot));align-items:flex-start;display:flex;background:rgba(10,10,12,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px 8px calc(8px + var(--bot));z-index:10}
+nav button{flex:1;border:0;background:none;color:var(--dim);font:inherit;font-size:11px;letter-spacing:.04em;padding:4px 0}
+nav svg{display:block;margin:0 auto 4px;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="app"><p class="hint" style="margin-top:30px">Загрузка…</p></div>
+<nav>
+  <button id="n-home" onclick="tab='home';cur=null;ren=null;settings=false;endAsk=false;resetAsk=false;render()"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg>Работа</button>
+  <button id="n-todo" onclick="tab='todo';cur=null;ren=null;settings=false;endAsk=false;resetAsk=false;tEdit=null;render()"><svg viewBox="0 0 24 24"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 11M4 18.5l1.8 1.8L9 17M12.5 7h7.5M12.5 13h7.5M12.5 19h7.5"/></svg>Задачи</button>
+  <button id="n-proj" onclick="tab='proj';cur=null;ren=null;settings=false;endAsk=false;resetAsk=false;render()"><svg viewBox="0 0 24 24"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2h7.5A2.5 2.5 0 0 1 21 9.5v7a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5z"/></svg>Проекты</button>
+  <button id="n-stat" onclick="tab='stat';cur=null;ren=null;settings=false;endAsk=false;resetAsk=false;render()"><svg viewBox="0 0 24 24"><path d="M5 20v-8M12 20V4M19 20v-5"/></svg>Статистика</button>
+</nav>
+<script>
+// ▼▼▼ АДРЕС СЕРВЕРА ДЛЯ ОТПРАВКИ КОПИЙ В ЧАТ (Cloudflare Worker). Оставь пустым '', чтобы отключить. ▼▼▼
+const BACKUP_URL = 'https://worksessiontimer.irodovartem.workers.dev/';
+// ▲▲▲
+const tg = window.Telegram && Telegram.WebApp;
+const V = v => !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v));
+if (tg) { tg.ready(); tg.expand(); try { if (V('7.7')) tg.disableVerticalSwipes(); } catch {} }
+const mobile = !!(tg && /^(ios|android|android_x)$/.test(tg.platform || ''));
+const canFull = !!(mobile && V('8.0') && tg.requestFullscreen);
+function applyInsets() {
+  const sa = (tg && tg.safeAreaInset) || {}, ca = (tg && tg.contentSafeAreaInset) || {}, full = !!(tg && tg.isFullscreen);
+  document.documentElement.style.setProperty('--top', (full ? (sa.top || 0) + (ca.top || 0) : 0) + 'px');
+  document.documentElement.style.setProperty('--tgb', ((sa.bottom || 0) + (ca.bottom || 0)) + 'px');
+}
+if (tg && V('8.0')) { ['fullscreenChanged', 'safeAreaChanged', 'contentSafeAreaChanged', 'viewportChanged'].forEach(ev => { try { tg.onEvent(ev, applyInsets); } catch {} }); applyInsets(); }
+function setFull(on) {
+  if (!canFull) return;
+  try { if (on && !tg.isFullscreen) tg.requestFullscreen(); if (!on && tg.isFullscreen) tg.exitFullscreen(); } catch {}
+  setTimeout(applyInsets, 300);
+}
+const cloud = !!(tg && tg.initData && tg.CloudStorage && V('6.9'));
+const LS = 'st-';
+
+/* ===== Хранилище: Telegram CloudStorage (синхронизируется между устройствами) или localStorage в обычном браузере ===== */
+const store = {
+  async keys() {
+    if (cloud) return new Promise((ok, no) => tg.CloudStorage.getKeys((e, k) => e ? no(e) : ok(k || [])));
+    return Object.keys(localStorage).filter(k => k.startsWith(LS)).map(k => k.slice(LS.length));
+  },
+  async get(keys) {
+    const out = {};
+    for (let i = 0; i < keys.length; i += 40) {
+      const part = keys.slice(i, i + 40);
+      if (cloud) await new Promise((ok, no) => tg.CloudStorage.getItems(part, (e, v) => e ? no(e) : (Object.assign(out, v || {}), ok())));
+      else part.forEach(k => { const v = localStorage.getItem(LS + k); if (v != null) out[k] = v; });
+    }
+    return out;
+  },
+  async set(k, v) {
+    if (cloud) return new Promise((ok, no) => tg.CloudStorage.setItem(k, v, e => e ? no(e) : ok()));
+    localStorage.setItem(LS + k, v);
+  },
+  async del(keys) {
+    if (!keys.length) return;
+    if (cloud) return new Promise((ok, no) => tg.CloudStorage.removeItems(keys, e => e ? no(e) : ok()));
+    keys.forEach(k => localStorage.removeItem(LS + k));
+  }
+};
+
+/* ===== Утилиты ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const now = () => Math.floor(Date.now() / 1000);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const fd = s => { s = Math.max(0, s); return [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map(n => String(n).padStart(2, '0')).join(':'); };
+const fh = s => { const m = Math.round(s / 60); return Math.floor(m / 60) + ' ч ' + String(m % 60).padStart(2, '0') + ' м'; };
+const hd = s => (s / 3600).toFixed(1).replace('.', ',');
+const pct = (a, b) => b > 0 ? Math.round(a / b * 100) : 0;
+const money = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
+const fdate = t => new Date(t * 1000).toLocaleDateString('ru-RU');
+const fday = t => new Date(t * 1000).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
+const ftime = t => new Date(t * 1000).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+const ymOf = t => { const d = new Date(t * 1000); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+const dayStart = t => { const d = new Date(t * 1000); d.setHours(0, 0, 0, 0); return d.getTime() / 1000; };
+// Свои окна сообщений и подтверждений — не зависят от системных окон Telegram/браузера
+function modal(msg, btns) {
+  return new Promise(res => {
+    const back = document.createElement('div'); back.className = 'mback';
+    back.innerHTML = `<div class="modal" role="dialog"><div class="mmsg"></div><div class="mbtns"></div></div>`;
+    back.querySelector('.mmsg').textContent = msg;
+    const box = back.querySelector('.mbtns');
+    const close = v => { back.classList.remove('on'); setTimeout(() => back.remove(), 180); document.removeEventListener('keydown', key); res(v); };
+    const key = e => { if (e.key === 'Escape') close(btns[0].v); if (e.key === 'Enter') close(btns[btns.length - 1].v); };
+    btns.forEach(b => { const el = document.createElement('button'); el.className = 'btn ' + (b.cls || 'alt'); el.textContent = b.t; el.onclick = () => close(b.v); box.appendChild(el); });
+    back.onclick = e => { if (e.target === back) close(btns[0].v); };
+    document.addEventListener('keydown', key);
+    document.body.appendChild(back); requestAnimationFrame(() => back.classList.add('on'));
+  });
+}
+const toast = m => { modal(m, [{ t: 'OK', v: true, cls: '' }]); };
+const ask = (m, ok = 'Да', danger = false) => modal(m, [{ t: 'Отмена', v: false }, { t: ok, v: true, cls: danger ? 'danger' : '' }]);
+const buzz = () => { try { if (V('6.1')) tg.HapticFeedback.impactOccurred('medium'); } catch {} };
+const parseHM = v => { const d = String(v).replace(/\D/g, ''); if (!d) return NaN; if (d.length <= 2) return +d; const m = +d.slice(-2); return m >= 60 ? NaN : +d.slice(0, -2) * 60 + m; }; // минуты
+const hm = s => { const m = Math.round(s / 60); return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); };
+function fmtHM(el) { const d = el.value.replace(/\D/g, '').slice(0, 4); el.value = d.length > 2 ? d.slice(0, -2) + ':' + d.slice(-2) : d; }
+const hmAttrs = 'type="text" inputmode="numeric" autocomplete="off" oninput="fmtHM(this)"';
+const num = v => parseFloat(String(v).replace(/\s/g, '').replace(',', '.'));
+
+/* ===== Данные =====
+   P — проекты {id, n, pr: стоимость, c: закрыт (время) или 0, cr: создан, h: [[время, сумма, комментарий]] доплаты}
+   T — задачи {id, p: проект, n, d: готова (время) или 0}
+   E — отрезки работы над задачей {id, t: задача, a, b, w: id рабочей сессии или null (если добавлено вручную)}
+   W — завершённые рабочие сессии {id, a, b}
+   S — текущая рабочая сессия {w: {id, a}, t: активная задача или null, r: начало текущего отрезка или null (пауза)} */
+let P = [], T = [], E = [], W = [], F = [], S = null; // F — папки {id, n, cr}
+const cache = {};
+let tab = 'home', cur = null, ren = null, sMode = 'month', sOff = 0, report = null, ended = null;
+
+async function load() {
+  const keys = (await store.keys()).filter(k => /^(S$|B$|O$|P-|T-|e-|w-|F-)/.test(k));
+  const v = await store.get(keys);
+  for (const k of keys) {
+    const s = v[k]; if (!s) continue;
+    let d; try { d = JSON.parse(s); } catch { continue; }
+    if (k === 'S') { S = d; continue; }
+    if (k === 'B') { lastBk = +d || 0; continue; }
+    if (k === 'O') { opt = Object.assign(opt, d); continue; }
+    cache[k] = s;
+    if (k.startsWith('P-')) d.forEach(r => P.push({ id: r[0], n: r[1], pr: r[2], c: r[3], cr: r[4], h: r[5] || [], f: r[6] || '', u: r[7] ? 1 : 0, g: Array.isArray(r[8]) ? r[8] : [], t: r[9] && typeof r[9] === 'object' ? r[9] : {}, pp: +r[10] || 0, wt: +r[11] || 0, cl: r[12] ?? -1, part: r.length > 13 ? (r[13] ? 1 : 0) : (+r[10] > 0 && +r[10] < +r[2] ? 1 : 0) }));
+    else if (k.startsWith('F-')) d.forEach(r => F.push({ id: r[0], n: r[1], cr: r[2], cl: r[3] ?? -1 }));
+    else if (k.startsWith('T-')) d.forEach(r => T.push({ id: r[0], p: r[1] || '', n: r[2], d: r[3], dd: r[4] || '', st: r[5] ? 1 : 0, o: typeof r[6] === 'number' ? r[6] : null }));
+    else if (k.startsWith('w-')) d.forEach(r => W.push({ id: r[0], a: r[1], b: r[2], k: r[3] || [] }));
+    else d.forEach(r => E.push({ id: r[0], t: r[1], a: r[2], b: r[3], w: r[4] || null }));
+  }
+  if (S && !S.w) S = { w: { id: uid(), a: S.a || now() }, t: S.t || null, r: S.r || null }; // старый формат
+  if (S) { S.k = S.k || []; S.br = S.br || null; S.bt = S.bt || null; }
+  P.sort((x, y) => x.cr - y.cr); F.sort((x, y) => x.cr - y.cr);
+  if (fixColors()) saveP();
+  if (fixCatColors()) saveO();
+  if (F.some(f => !(f.cl >= 0))) { F.forEach((f, i) => { if (!(f.cl >= 0)) f.cl = i % 8; }); saveF(); }
+  if (fixOrder()) saveT();
+}
+
+// Запись коллекции кусками до ~3500 символов (лимит Telegram — 4096 на ключ); неизменённые куски не перезаписываются
+async function saveChunks(prefix, rows) {
+  const chunks = []; let c = [];
+  for (const r of rows) { c.push(r); if (JSON.stringify(c).length > 3500 && c.length > 1) { c.pop(); chunks.push(c); c = [r]; } }
+  if (c.length) chunks.push(c);
+  const want = new Set();
+  for (let i = 0; i < chunks.length; i++) {
+    const k = prefix + i, s = JSON.stringify(chunks[i]); want.add(k);
+    if (cache[k] !== s) { await store.set(k, s); cache[k] = s; }
+  }
+  const stale = Object.keys(cache).filter(k => k.startsWith(prefix) && /^\d+$/.test(k.slice(prefix.length)) && !want.has(k));
+  if (stale.length) { await store.del(stale); stale.forEach(k => delete cache[k]); }
+}
+let queue = Promise.resolve();
+const persist = fn => { queue = queue.then(fn).catch(e => toast('Ошибка сохранения: ' + ((e && e.message) || e))); };
+const saveP = () => persist(() => saveChunks('P-', P.map(p => [p.id, p.n, p.pr, p.c, p.cr, p.h, p.f || '', p.u ? 1 : 0, p.g || [], p.t || {}, p.pp || 0, p.wt || 0, p.cl ?? -1, p.part ? 1 : 0])));
+// настройки по умолчанию: вкладки «Все» и «Завершённые» видны, режим «В ожидании» включён, полный экран
+const DEF_OPT = () => ({ hideAll: false, hideDone: false, noWait: false, full: true, folderCol: true, plainTags: true });
+let opt = DEF_OPT();
+const saveO = () => persist(() => store.set('O', JSON.stringify(opt)));
+const saveF = () => persist(() => saveChunks('F-', F.map(f => [f.id, f.n, f.cr, f.cl ?? -1])));
+const saveT = () => persist(() => saveChunks('T-', T.map(t => [t.id, t.p, t.n, t.d, t.dd || '', t.st ? 1 : 0, t.o ?? 0])));
+const saveM = ym => persist(() => saveChunks('e-' + ym + '-', E.filter(e => ymOf(e.a) === ym).sort((x, y) => x.a - y.a).map(e => [e.id, e.t, e.a, e.b, e.w])));
+const saveW = ym => persist(() => saveChunks('w-' + ym + '-', W.filter(w => ymOf(w.a) === ym).sort((x, y) => x.a - y.a).map(w => [w.id, w.a, w.b, w.k || []])));
+const saveS = () => persist(() => S ? store.set('S', JSON.stringify(S)) : store.del(['S']));
+
+/* ===== Расчёты ===== */
+const task = id => T.find(t => t.id === id);
+const proj = id => P.find(p => p.id === id);
+const tname = id => (task(id) || { n: '?' }).n;
+const pname = tid => (proj((task(tid) || {}).p) || { n: 'Без проекта' }).n;
+const pidOf = e => (task(e.t) || {}).p;
+const allE = () => S && S.t && S.r ? E.concat([{ t: S.t, a: S.r, b: now(), w: S.w.id }]) : E;
+const allW = () => S ? W.concat([{ id: S.w.id, a: S.w.a, b: now(), open: true, k: S.k.concat(S.br ? [[S.br, now()]] : []) }]) : W;
+const sum = es => es.reduce((x, e) => x + e.b - e.a, 0);
+const brSec = w => (w.k || []).reduce((x, k) => x + k[1] - k[0], 0);
+const wWork = w => w.b - w.a; // длительность сессии целиком, вместе с перерывами (перерывы — brSec)
+const sessBreaks = () => S ? S.k.reduce((x, k) => x + k[1] - k[0], 0) + (S.br ? now() - S.br : 0) : 0;
+const sessWork = () => S ? now() - S.w.a : 0; // общий таймер идёт и во время перерыва
+const taskSec = id => sum(allE().filter(e => e.t === id));
+const projSec = pid => { const ids = new Set(T.filter(t => t.p === pid).map(t => t.id)); return sum(allE().filter(e => ids.has(e.t))); };
+const shiftEs = wid => allE().filter(e => e.w === wid);
+const rate = p => { if (p.u) return 0; const s = projSec(p.id); return s > 0 ? p.pr / (s / 3600) : 0; };
+const priceTxt = p => p.u ? 'не указана' : money(p.pr);
+const base = p => p.pr - p.h.reduce((x, h) => x + h[1], 0);
+
+/* ===== Рабочая сессия и задачи ===== */
+function addEntry(t, a, b, w) { if (b - a < 1) return; /* отрезки от 1 секунды — чтобы ничего не пропадало из кольца */ E.push({ id: uid(), t, a, b, w }); saveM(ymOf(a)); }
+function closeInterval() { if (S && S.t && S.r) { addEntry(S.t, S.r, now(), S.w.id); S.r = null; } }
+const newS = () => ({ w: { id: uid(), a: now() }, t: null, r: null, k: [], br: null, bt: null });
+function startShift() { S = newS(); ended = null; buzz(); saveS(); render(); }
+async function go(tid) {
+  if (!S) {
+    const t = task(tid);
+    if (!(await modal(`Начать рабочую сессию?${t ? `\nИ сразу задачу «${t.n}».` : ''}`, [{ t: 'Нет', v: false }, { t: 'Да', v: true }]))) return;
+    if (S) return go(tid);
+    S = newS();
+  }
+  if (S.br) stopBreak(false);
+  closeInterval(); S.t = tid; S.r = now(); ended = null;
+  tab = 'home'; cur = null; buzz(); saveS(); render();
+}
+function pauseTask() { closeInterval(); saveS(); render(); }
+function resumeTask() { if (S && S.t && !S.r && !S.br) { S.r = now(); buzz(); saveS(); render(); } }
+function takeBreak() { if (!S || S.br) return; S.bt = S.t && S.r ? S.t : null; closeInterval(); S.br = now(); buzz(); saveS(); render(); }
+function stopBreak(resume) {
+  if (!S || !S.br) return; const t = now();
+  if (t - S.br >= 1) S.k.push([S.br, t]);
+  S.br = null;
+  if (resume !== false && S.bt && task(S.bt) && !task(S.bt).d) { S.t = S.bt; S.r = t; }
+  S.bt = null;
+}
+function endBreak() { stopBreak(); buzz(); saveS(); render(); }
+function releaseTask() { closeInterval(); if (S) S.t = null; saveS(); render(); }
+async function doneTask() {
+  if (!S || !S.t) return; const t = task(S.t);
+  closeInterval(); S.t = null; if (t) { t.d = now(); saveT(); } saveS(); render();
+  if (t) askCloseIfDone(t.p);
+}
+async function askCloseIfDone(pid) {
+  const p = proj(pid); if (p && !p.c && !T.some(x => x.p === p.id && !x.d) && await modal('Все задачи проекта «' + p.n + '» готовы. Закрыть проект?', [{ t: 'Нет', v: false }, { t: 'Да', v: true }])) closeProject(p.id);
+}
+let endAsk = false;
+function endShift() {
+  if (!S) return;
+  endAsk = false; stopBreak(false); closeInterval();
+  const w = { id: S.w.id, a: S.w.a, b: now(), k: S.k };
+  W.push(w); saveW(ymOf(w.a)); S = null; saveS(); ended = w.id; endedLbl = 'Сессия завершена'; render();
+}
+function releaseIfIn(pred) { if (S && S.t && pred(S.t)) { closeInterval(); S.t = null; saveS(); } }
+
+// порядок задач: у старых — по времени создания; T всегда отсортирован по o
+function fixOrder() { let ch = false; T.sort((x, y) => (x.o ?? Infinity) - (y.o ?? Infinity) || (x.id < y.id ? -1 : 1)); T.forEach((t, i) => { if (t.o !== i) { t.o = i; ch = true; } }); return ch; }
+const nextO = () => T.reduce((m, t) => Math.max(m, t.o ?? 0), -1) + 1;
+function moveTask(id, dir) {
+  const t = task(id), list = T.filter(x => x.p === t.p).sort((a, b) => (!!a.d - !!b.d) || a.o - b.o), i = list.indexOf(t), j = i + dir;
+  if (j < 0 || j >= list.length || !!list[j].d !== !!t.d) return;
+  [list[i].o, list[j].o] = [list[j].o, list[i].o]; T.sort((x, y) => x.o - y.o); saveT(); render();
+}
+let ordP = null; // проект, в котором включён режим «порядок»
+/* ===== Задачи (таск-менеджер): дела без проекта + задачи всех проектов ===== */
+let tEdit = null, tfMode = 'all';
+const isoOf = t => new Date(t * 1000).toLocaleDateString('sv');
+const isoAdd = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv'); };
+const dayDiff = iso => Math.round((new Date(iso + 'T12:00:00') - new Date(isoAdd(0) + 'T12:00:00')) / 864e5);
+const nDays = n => n % 10 === 1 && n % 100 !== 11 ? 'день' : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'дня' : 'дней';
+function dueLabel(iso) {
+  const k = dayDiff(iso), d = new Date(iso + 'T12:00:00');
+  if (k === -1) return 'вчера'; if (k < 0) return -k + ' ' + nDays(-k) + ' назад';
+  if (k === 0) return 'сегодня'; if (k === 1) return 'завтра';
+  if (k < 7) return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+}
+const dueChip = iso => { const k = dayDiff(iso); return `<span class="due ${k < 0 ? 'over' : k === 0 ? 'today' : ''}">🕓 ${dueLabel(iso)}</span>`; };
+// какие задачи видны в списке: дела без проекта + задачи открытых проектов (не в ожидании)
+const todoVisible = t => t.p === '' || (proj(t.p) && !proj(t.p).c && !isW(proj(t.p)));
+let rankMap = null;
+function todoRank(t) {
+  if (!rankMap) { rankMap = new Map(); const by = {}; T.filter(x => !x.d).forEach(x => (by[x.p] = by[x.p] || []).push(x)); Object.values(by).forEach(a => a.forEach((x, i) => rankMap.set(x.id, i))); setTimeout(() => rankMap = null); }
+  return rankMap.get(t.id) ?? 0;
+}
+const pOrd = t => { const p = proj(t.p); return p ? -p.cr : -Infinity; }; // при равном номере: дела без проекта, затем свежие проекты
+const todoSort = (a, b) => (b.st || 0) - (a.st || 0) || (a.dd || '9').localeCompare(b.dd || '9') || todoRank(a) - todoRank(b) || pOrd(a) - pOrd(b) || a.o - b.o;
+function todoRow(t, opts = {}) {
+  const p = proj(t.p), ed = tEdit === t.id && !opts.mini, run = S && S.t === t.id;
+  let h = `<div class="trow ${t.d ? 'dn' : ''} ${ed ? 'ed' : ''}" data-id="${t.id}"><div class="tsw"><span class="l">✓ Готово</span><span class="r">Завтра →</span></div>
+    <div class="tfg"><button class="chk ${t.d ? 'on' : ''}" onclick="todoDone('${t.id}')" aria-label="Готово">${t.d ? '✓' : ''}</button>
+    <div class="tmain" onclick="tEdit=tEdit==='${t.id}'?null:'${t.id}';${opts.mini ? "tab='todo';" : ''}render()"><div class="ttl">${esc(t.n)}</div>
+      ${p || t.dd ? `<div class="tmeta">${p ? `<span>${dot(colorOf(p.id))}${esc(p.n)}</span>` : ''}${t.dd && !t.d ? dueChip(t.dd) : ''}</div>` : ''}
+      ${p && projTags(p).length ? `<div class="tags" style="margin-top:5px">${projTags(p).map(x => `<span class="tag" ${tagStyle(x.col)}>${esc(tagLabel(x))}</span>`).join('')}</div>` : ''}</div>
+    ${t.d ? '' : `<button class="star ${t.st ? 'on' : ''}" onclick="todoStar('${t.id}')" aria-label="Важное">${t.st ? '★' : '☆'}</button>
+    <button class="ib play" style="margin-left:2px" onclick="go('${t.id}')">${run ? '●' : '▶'}</button>`}</div>`;
+  if (ed) {
+    const k = t.dd ? dayDiff(t.dd) : null;
+    h += `<div class="ted"><input value="${esc(t.n)}" maxlength="100" onchange="todoRename('${t.id}',this.value)" style="margin-top:8px">
+      <div class="lbl" style="margin:6px 0 0 2px">Срок</div>
+      <div class="chips"><button class="${k === 0 ? 'on' : ''}" onclick="todoDue('${t.id}',isoAdd(0))">Сегодня</button><button class="${k === 1 ? 'on' : ''}" onclick="todoDue('${t.id}',isoAdd(1))">Завтра</button><button onclick="todoDue('${t.id}',isoAdd(7))">Через неделю</button>${t.dd ? `<button onclick="todoDue('${t.id}','')">Без срока</button>` : ''}</div>
+      <input type="date" value="${t.dd || ''}" onchange="todoDue('${t.id}',this.value)">
+      ${p ? `<button class="btn alt" onclick="cur='${p.id}';tab='proj';tEdit=null;render()">Открыть проект «${esc(p.n)}»</button>`
+        : P.some(x => !x.c) ? `<div class="lbl" style="margin:6px 0 0 2px">Перенести в проект</div><select onchange="todoMove('${t.id}',this.value)"><option value="">— выбери проект —</option>${P.filter(x => !x.c).sort((a, b) => b.cr - a.cr).map(x => `<option value="${x.id}">${esc(x.n)}${folder(x.f) ? ' · ' + esc(folder(x.f).n) : ''}</option>`).join('')}</select>` : ''}
+      <button class="btn del" onclick="delTask('${t.id}')">Удалить задачу</button></div>`;
+  }
+  return h + '</div>';
+}
+function todoGroups(list) {
+  const g = { over: [], today: [], tom: [], later: [], none: [] };
+  list.forEach(t => { if (!t.dd) return g.none.push(t); const k = dayDiff(t.dd); g[k < 0 ? 'over' : k === 0 ? 'today' : k === 1 ? 'tom' : 'later'].push(t); });
+  Object.values(g).forEach(a => a.sort(todoSort)); return g;
+}
+function viewTodo() {
+  const all = T.filter(t => todoVisible(t) && (tfMode === 'all' || (tfMode === 'own' ? t.p === '' : t.p !== '')));
+  const open = all.filter(t => !t.d), g = todoGroups(open);
+  let h = `<h2>Задачи</h2>
+    <div class="inl"><input id="nt-todo" placeholder="Новое дело" maxlength="100" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newTodo(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newTodo()">+</button></div>
+    <div class="seg" style="margin-top:6px">${[['all', 'Все'], ['own', 'Без проекта'], ['proj', 'Из проектов']].map(([m, n]) => `<button class="${tfMode === m ? 'on' : ''}" onclick="tfMode='${m}';tEdit=null;render()">${n}</button>`).join('')}</div>`;
+  const sec = (key, title, color) => g[key].length ? `<div class="tgrp"><span class="lbl" ${color ? `style="color:${color}"` : ''}>${title}</span><span class="hint num">${g[key].length}</span></div>` + g[key].map(t => todoRow(t)).join('') : '';
+  h += sec('over', 'Просрочено', 'var(--red)') + sec('today', 'Сегодня', 'var(--acc)') + sec('tom', 'Завтра') + sec('later', 'Скоро') + sec('none', 'Без срока');
+  if (!open.length) h += `<div class="hint center" style="padding:30px 0 10px">${all.length ? 'Всё сделано 🎉' : 'Задач пока нет.<br>Впиши дело в поле сверху.'}</div>`;
+  const done = all.filter(t => t.d && t.d > now() - 14 * 86400).sort((a, b) => b.d - a.d);
+  if (done.length) h += `<details class="sw" style="margin-top:14px"><summary>Выполнено за 2 недели (${done.length})</summary>${done.map(t => todoRow(t)).join('')}</details>`;
+  if (open.length) h += `<div class="hint center" style="margin:14px 0 4px">Свайп вправо — готово, влево — на завтра</div>`;
+  return h;
+}
+function todayCard() {
+  const list = T.filter(t => !t.d && t.dd && dayDiff(t.dd) <= 0 && todoVisible(t)).sort((a, b) => todoSort(a, b));
+  const done = T.filter(t => t.d && t.d >= dayStart(now()) && todoVisible(t) && (t.dd || t.p === '')).sort((a, b) => b.d - a.d);
+  if (!list.length && !done.length) return '';
+  return `<div class="row" style="margin:22px 4px 4px"><span class="lbl">На сегодня</span><button class="link" style="margin:0;padding:0" onclick="tab='todo';render()">все задачи ›</button></div>` +
+    list.slice(0, 6).map(t => todoRow(t)).join('') + (list.length > 6 ? `<div class="hint center" style="margin:6px 0">и ещё ${list.length - 6}</div>` : '') +
+    (!list.length ? '<div class="hint center" style="padding:10px 0">На сегодня всё сделано 🎉</div>' : '') +
+    (done.length ? `<div class="tgrp"><span class="lbl">Выполнено сегодня</span><span class="hint num">${done.length}</span></div>` + done.map(t => todoRow(t)).join('') : '');
+}
+function inboxPick() {
+  const list = T.filter(t => t.p === '' && !t.d && !(S && S.t === t.id)).sort((a, b) => (a.dd ? dayDiff(a.dd) : 1e9) - (b.dd ? dayDiff(b.dd) : 1e9) || todoSort(a, b));
+  if (!list.length) return '';
+  return `<div class="card"><div class="row" style="margin-bottom:6px"><span>${dot('#7f8aa3')}<b>Дела без проекта</b></span></div>` +
+    list.slice(0, 8).map(t => `<button class="item" onclick="go('${t.id}')"><span>${esc(t.n)}${t.dd ? ' ' + dueChip(t.dd) : ''}</span><span class="hint num">${fh(taskSec(t.id))} <span style="color:var(--acc);margin-left:6px">▶</span></span></button>`).join('') + '</div>';
+}
+function newTodo(done) {
+  const el = $('#nt-todo'), n = el.value.trim(); if (!n) return done ? el.blur() : el.focus();
+  T.push({ id: uid(), p: '', n: n.slice(0, 100), d: 0, dd: '', st: 0, o: nextO() }); saveT();
+  if (tfMode === 'proj') tfMode = 'all';
+  if (done) { el.blur(); render(); return; }
+  render(); const e2 = $('#nt-todo'); if (e2) e2.focus();
+}
+function todoDone(id) {
+  const t = task(id); if (!t) return; t.d = t.d ? 0 : now();
+  if (t.d) releaseIfIn(x => x === id);
+  if (tEdit === id) tEdit = null;
+  saveT(); render(); if (t.d) { buzz(); askCloseIfDone(t.p); }
+}
+function todoStar(id) { const t = task(id); t.st = t.st ? 0 : 1; saveT(); render(); }
+function todoDue(id, v) { const t = task(id); t.dd = v || ''; saveT(); render(); }
+function todoRename(id, v) { const t = task(id), n = String(v).trim().slice(0, 100); if (n) { t.n = n; saveT(); } render(); }
+function todoMove(id, pid) { if (!pid) return; const t = task(id), p = proj(pid); t.p = pid; tEdit = null; saveT(); render(); toast(`«${t.n}» теперь в проекте «${p.n}»`); }
+// свайпы по задаче: вправо — готово, влево — перенести на завтра
+(function () {
+  let row = null, fg = null, x0 = 0, y0 = 0, dx = 0, lock = null;
+  document.addEventListener('touchstart', e => {
+    row = e.target.closest('.trow'); if (!row || row.classList.contains('ed') || e.target.closest('input,select,.ted')) { row = null; return; }
+    fg = row.querySelector('.tfg'); const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; dx = 0; lock = null;
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!row) return; const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0;
+    if (!lock) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; lock = Math.abs(mx) > Math.abs(my) * 1.2 ? 'x' : 'y'; if (lock === 'x') { fg.style.transition = 'none'; row.classList.add('sw-on'); } }
+    if (lock !== 'x') return; e.preventDefault();
+    dx = row.classList.contains('dn') && mx < 0 ? mx / 4 : mx; fg.style.transform = `translateX(${dx}px)`;
+  }, { passive: false });
+  document.addEventListener('touchend', () => {
+    if (!row || lock !== 'x') { row = null; return; }
+    const id = row.dataset.id, r = row, f = fg; f.style.transition = ''; row = null;
+    if (dx > 80) { f.style.transform = 'translateX(110%)'; setTimeout(() => todoDone(id), 180); }
+    else if (dx < -80 && !r.classList.contains('dn')) { f.style.transform = 'translateX(-110%)'; setTimeout(() => todoDue(id, isoAdd(1)), 180); }
+    else { f.style.transform = ''; setTimeout(() => r.classList.remove('sw-on'), 220); }
+  });
+})();
+
+/* ===== Проекты, задачи, переименование ===== */
+function newProject(fid = '') {
+  const k = fid || 'x', n = $('#np-n-' + k).value.trim(), pr = num($('#np-p-' + k).value), fs = $('#np-f-' + k);
+  if (fs) fid = folder(fs.value) ? fs.value : '';
+  const tt = {}; cats().forEach(c => { const el = $('#np-t-' + k + '-' + c.id), v = el ? el.value.trim().slice(0, 60) : ''; if (v) tt[c.id] = v; });
+  if (!n) return toast('Впиши название проекта');
+  const ppd = $('#np-ppd-' + k), part = ppd && ppd.open ? 1 : 0;
+  const noPrice = $('#np-p-' + k).value.trim() === '', ppv = part ? $('#np-pp-' + k).value.trim() : '', pp = ppv === '' ? 0 : num(ppv);
+  if (!noPrice && !(pr >= 0)) return toast('Цена — это число. Или оставь поле пустым и укажи цену позже.');
+  if (!(pp >= 0)) return toast('Сколько заплатили — это число. Если пока ничего, впиши 0.');
+  if (!noPrice && pp > pr) return toast('Получено больше стоимости проекта — проверь суммы.');
+  P.push({ id: uid(), n, pr: noPrice ? 0 : pr, c: 0, cr: now(), h: [], f: fid, u: noPrice ? 1 : 0, g: [], t: tt, pp, part, cl: freeColor() }); saveP(); newPOpen = false; render();
+}
+function newTask(pid, andGo, src, done) {
+  const el = src ? (src.tagName === 'INPUT' ? src : src.parentNode.querySelector('input')) : $('#nt-' + pid), n = el.value.trim();
+  if (done && !n) return el.blur(); // Enter в пустом поле — просто убрать клавиатуру
+  if (!n) return el.focus();
+  const t = { id: uid(), p: pid, n, d: 0, o: nextO() }; T.push(t); saveT();
+  if (andGo) return go(t.id);
+  if (done) { el.blur(); render(); return; } // Enter — сохранить задачу и закрыть клавиатуру
+  render();
+  const nx = $('#nt-' + pid); // «+» — поле сразу снова в фокус, чтобы вводить следующую
+  if (nx) { nx.focus(); nx.scrollIntoView({ block: 'center' }); }
+}
+let fIdx = 0, kIdx = 0, addF = false;
+const pgIdx = () => tab === 'home' ? kIdx : fIdx;
+const setPgIdx = i => { if (tab === 'home') kIdx = i; else fIdx = i; };
+const folder = id => F.find(f => f.id === id);
+const WAIT = '~'; // служебная вкладка «В ожидании»
+const DONE = '!'; // служебная вкладка «Завершённые» (можно скрыть в настройках)
+const isW = p => !!p.wt && !p.c && !opt.noWait; // «в ожидании» (функцию можно выключить в настройках — отметки сохраняются)
+const inTab = (p, id) => id === WAIT ? isW(p) : id === DONE ? !!p.c : !isW(p) && !(p.c && !opt.hideDone) && (id === '' || (id === '-' ? !folder(p.f) : p.f === id));
+function projTabs(noDone) {
+  const A = P.filter(p => inTab(p, '')), fs = F.map(f => ({ id: f.id, n: f.n, c: A.filter(p => p.f === f.id).length })), loose = A.filter(p => !folder(p.f)).length;
+  const tail = (opt.noWait ? [] : [{ id: WAIT, n: 'В ожидании', c: P.filter(isW).length }]).concat(opt.hideDone || noDone ? [] : [{ id: DONE, n: 'Завершённые', c: P.filter(p => p.c).length }]);
+  if (!opt.hideAll || !F.length) return [{ id: '', n: 'Все', c: A.length }].concat(fs, tail);
+  return (loose ? fs.concat([{ id: '-', n: 'Без папки', c: loose }]) : fs).concat(tail);
+}
+function setWait(pid, on) {
+  const p = proj(pid); p.wt = on ? now() : 0; saveP(); render();
+  toast(on ? `«${p.n}» — в ожидании.\nОн теперь во вкладке «В ожидании».` : `«${p.n}» снова в работе — вернулся в ${folder(p.f) ? '«' + folder(p.f).n + '»' : 'свою папку'}.`);
+}
+const fname = p => (p && folder(p.f) || { n: 'Без папки' }).n;
+function newFolder(done) {
+  const el = $('#nf'), n = el.value.trim(); if (!n) return done ? el.blur() : el.focus();
+  const used = F.map(f => f.cl); F.push({ id: uid(), n, cr: now(), cl: COLS.findIndex((_, i) => !used.includes(i)) }); saveF();
+  if (done) { el.blur(); render(); return; } // Enter — создать и закрыть клавиатуру
+  render(); const el2 = $('#nf'); if (el2) el2.focus(); // «Создать» — сразу вводить следующую
+}
+async function delFolder(id) {
+  const f = folder(id); if (!(await ask(`Удалить папку «${f.n}»? Проекты не удалятся — они останутся во вкладке «Все».`, 'Удалить', true))) return;
+  F = F.filter(x => x.id !== id); P.forEach(p => { if (p.f === id) p.f = ''; }); saveF(); saveP(); fIdx = 0; kIdx = 0; render();
+}
+function moveFolder(id, d) {
+  const i = F.findIndex(f => f.id === id), j = i + d; if (i < 0 || j < 0 || j >= F.length) return;
+  [F[i], F[j]] = [F[j], F[i]]; F.forEach((f, k) => f.cr = k + 1); saveF(); render();
+}
+function setFolder(pid, fid) { proj(pid).f = fid; saveP(); render(); }
+function fitPager() { const pg = $('#pager'), p = pg && pg.firstElementChild.children[pgIdx()]; if (p) pg.style.height = p.offsetHeight + 'px'; }
+function setFIdx(i) {
+  setPgIdx(i); fitPager(); const tabs = document.querySelectorAll('.ftab:not(.add)');
+  tabs.forEach((b, j) => b.classList.toggle('on', j === i));
+  const on = tabs[i], bar = $('.ftabs'); if (on && bar) bar.scrollTo({ left: on.offsetLeft - bar.clientWidth / 2 + on.clientWidth / 2, behavior: 'smooth' });
+}
+function pagerGo(i, anim = true) {
+  const pg = $('#pager'); if (!pg) return; const tr = pg.firstElementChild;
+  i = Math.max(0, Math.min(tr.children.length - 1, i));
+  tr.style.transition = anim ? '' : 'none';
+  tr.style.transform = `translateX(${-i * 100}%)`;
+  setFIdx(i);
+}
+function goFolder(i) { if (newPOpen && tab === 'proj') { newPOpen = false; render(); } pagerGo(i); }
+// Свайп между папками: страница едет за пальцем, при отпускании доводится до ближайшей
+// слушаем весь экран, а не только ленту, чтобы свайп работал и на пустом месте под короткой папкой
+let statAnim = false;
+function statSwipe(dir, fromDx = 0) { // dir: +1 — следующий период, -1 — предыдущий; fromDx — где отпустили палец
+  const old = $('#swp');
+  if (!old || statAnim) { sOff += dir; wAll = 0; report = null; render(); return; }
+  statAnim = true;
+  const W = old.offsetWidth, top = old.offsetTop, left = old.offsetLeft;
+  const ghost = old.cloneNode(true); ghost.removeAttribute('id');
+  sOff += dir; wAll = 0; report = null; render();
+  const nw = $('#swp'), app = $('#app');
+  Object.assign(ghost.style, { position: 'absolute', top: top + 'px', left: left + 'px', width: W + 'px', margin: '0', pointerEvents: 'none', transition: 'none', transform: `translateX(${fromDx}px)` });
+  app.appendChild(ghost);
+  ghost.style.opacity = old.style.opacity || '1';
+  nw.style.transition = 'none'; nw.style.transform = `translateX(${dir * W + fromDx}px)`; nw.style.opacity = '0';
+  void nw.offsetWidth;
+  const ease = 'transform .38s cubic-bezier(.22,.8,.24,1)';
+  ghost.style.transition = ease + ', opacity .28s ease-out'; nw.style.transition = ease + ', opacity .3s ease-out';
+  ghost.style.transform = `translateX(${-dir * W * .6}px)`; ghost.style.opacity = '0';
+  nw.style.transform = 'translateX(0)'; nw.style.opacity = '1';
+  const done = () => { if (!statAnim) return; statAnim = false; ghost.remove(); nw.style.transition = ''; nw.style.transform = ''; nw.style.opacity = ''; };
+  nw.addEventListener('transitionend', done, { once: true }); setTimeout(done, 500);
+}
+// Свайпы: папки в «Проектах» (лента едет за пальцем) и периоды в «Статистике». Слушаем весь экран.
+function initSwipe() {
+  const app = $('#app'); let mode = null, pg = null, tr = null, el = null, x0 = 0, y0 = 0, t0 = 0, lock = null, dx = 0;
+  app.addEventListener('touchstart', e => {
+    lock = null; dx = 0;
+    pg = $('#pager'); tr = !settings && pg && pg.offsetParent && ((tab === 'proj' && !cur) || tab === 'home') ? pg.firstElementChild : null;
+    el = !settings && tab === 'stat' && !statAnim ? $('#swp') : null;
+    mode = tr ? 'p' : el ? 's' : null;
+    if (!mode || e.touches.length > 1 || e.target.closest('.ftabs,textarea,input,select,.trow')) { lock = 'n'; return; }
+    const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
+  }, { passive: true });
+  app.addEventListener('touchmove', e => {
+    if (lock === 'n') return;
+    const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0;
+    if (!lock) {
+      if (Math.abs(mx) < 10 && Math.abs(my) < 10) return;
+      lock = Math.abs(mx) > Math.abs(my) * 1.2 ? 'x' : 'y';
+      if (lock === 'x') { (mode === 'p' ? tr : el).style.transition = 'none'; const a = document.activeElement; if (a && a.blur && a.matches('input,textarea')) a.blur(); }
+    }
+    if (lock !== 'x') return;
+    e.preventDefault();
+    if (mode === 'p') {
+      const ci = pgIdx(), n = tr.children.length, edge = (ci === 0 && mx > 0) || (ci === n - 1 && mx < 0);
+      dx = edge ? mx / 3 : mx;
+      tr.style.transform = `translateX(calc(${-ci * 100}% + ${dx}px))`;
+    } else {
+      dx = mx;
+      dx = mx; el.style.transform = `translateX(${dx}px)`; el.style.opacity = String(1 - Math.min(.45, Math.abs(dx) / app.clientWidth * .6));
+    }
+  }, { passive: false });
+  const end = () => {
+    if (lock !== 'x') { lock = null; return; }
+    lock = null;
+    const W = app.clientWidth, v = Math.abs(dx) / Math.max(1, Date.now() - t0), go = Math.abs(dx) > W * 0.22 || (v > 0.35 && Math.abs(dx) > 24);
+    if (mode === 'p') pagerGo(pgIdx() + (go ? (dx < 0 ? 1 : -1) : 0));
+    else if (go) statSwipe(dx < 0 ? 1 : -1, dx);
+    else { el.style.transition = 'transform .28s cubic-bezier(.22,.8,.24,1), opacity .28s'; el.style.transform = ''; el.style.opacity = ''; }
+  };
+  app.addEventListener('touchend', end); app.addEventListener('touchcancel', end);
+}
+function byFolder(rows) {
+  const m = {};
+  rows.forEach(x => { const k = folder(x.p.f) ? x.p.f : ''; const o = m[k] = m[k] || { n: fname(x.p), sec: 0, psec: 0, osec: 0, earned: 0, ps: [] }; o.sec += x.sec; if (x.cnt) o.psec += x.sec; if (x.open) o.osec += x.sec; o.earned += x.earned; o.ps.push(x.p.n); });
+  return Object.values(m).sort((a, b) => b.sec - a.sec);
+}
+function startRen(k) { ren = k; render(); }
+function doRename(val) {
+  if (!ren) return;
+  const [kind, id] = ren.split(':'), n = String(val).trim(), o = kind === 'p' ? proj(id) : kind === 'f' ? folder(id) : kind === 'c' ? cats().find(c => c.id === id) : task(id);
+  ren = null;
+  if (o && n && n !== o.n) { o.n = n.slice(0, kind === 'c' ? 30 : 100); kind === 'p' ? saveP() : kind === 'f' ? saveF() : kind === 'c' ? saveO() : saveT(); }
+  render();
+}
+const renInput = (val, max) => `<input id="ren" value="${esc(val)}" maxlength="${max}" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){ren=null;render()}" onblur="doRename(this.value)">`;
+function toggleTask(id) {
+  const t = task(id); t.d = t.d ? 0 : now();
+  if (t.d) releaseIfIn(x => x === id);
+  saveT(); render();
+  if (t.d) askCloseIfDone(t.p);
+}
+async function delTask(id) {
+  const t = task(id); if (!(await ask('Удалить задачу «' + t.n + '» и всё её время?', 'Удалить', true))) return;
+  releaseIfIn(x => x === id);
+  const months = new Set(E.filter(e => e.t === id).map(e => ymOf(e.a)));
+  E = E.filter(e => e.t !== id); T = T.filter(x => x.id !== id);
+  saveT(); months.forEach(saveM); render();
+}
+function setPrice(pid, v) { const p = proj(pid), x = num(v); if (String(v).trim() !== '' && x >= 0) { p.pr = x; p.u = 0; saveP(); } render(); }
+function addPay(pid) {
+  const p = proj(pid), a = num($('#pay-a').value), note = $('#pay-n').value.trim().slice(0, 60);
+  if (!a) return toast('Впиши сумму доплаты');
+  p.pr += a; p.h.push([now(), a, note]); saveP(); render();
+}
+function delPay(pid, i) { const p = proj(pid); p.pr -= p.h[i][1]; p.h.splice(i, 1); saveP(); render(); }
+const paid = p => p.part ? Math.min(p.pp || 0, p.pr) : p.pr, owed = p => p.part ? Math.max(0, p.pr - (p.pp || 0)) : 0;
+function setPaid(pid, v) { const p = proj(pid), x = String(v).trim() === '' ? 0 : num(v); if (x >= 0) { p.pp = x; saveP(); } else toast('Впиши сумму числом'); render(); }
+function setPart(pid, on) { const p = proj(pid); p.part = on ? 1 : 0; if (on) p.pp = 0; saveP(); render(); if (on) { const el = $('#paid-' + pid); if (el) { el.focus(); el.select(); } } }
+async function closeProject(pid) {
+  const p = proj(pid);
+  if (!p.u && p.pr > 0 && p.part) {
+    const got = p.pp || 0, left = owed(p);
+    const ok = await modal(`Ты получил всю сумму за проект «${p.n}» — ${money(p.pr)}?` + (got > 0 ? `\nПредоплата: ${money(got)}, остаток: ${money(left)}.` : ''),
+      [{ t: 'Ещё нет', v: false }, { t: 'Да, получил всё', v: true }]);
+    if (!ok) return toast(`Проект остаётся в работе.\n${left < p.pr ? 'Ждём остаток ' + money(left) + '. ' : ''}Когда получишь деньги — закрой его снова, и он попадёт в статистику.`);
+    p.pp = p.pr; p.part = 0;
+  }
+  releaseIfIn(x => (task(x) || {}).p === pid);
+  p.c = now(); p.wt = 0; saveP(); render();
+  toast(p.u ? `Проект «${p.n}» закрыт: ${fh(projSec(pid))}.\nУкажи цену в карточке проекта — тогда посчитается ставка.` : `Проект «${p.n}» закрыт.\n${fh(projSec(pid))} за ${money(p.pr)} → ${money(rate(p))}/ч`);
+}
+function reopenProject(pid) { proj(pid).c = 0; saveP(); render(); }
+async function delProject(pid) {
+  const p = proj(pid); if (!(await ask('Удалить проект «' + p.n + '» со всеми задачами и временем? Это не отменить.', 'Удалить', true))) return;
+  const ids = new Set(T.filter(t => t.p === pid).map(t => t.id));
+  releaseIfIn(x => ids.has(x));
+  const months = new Set(E.filter(e => ids.has(e.t)).map(e => ymOf(e.a)));
+  E = E.filter(e => !ids.has(e.t)); T = T.filter(t => t.p !== pid); P = P.filter(x => x.id !== pid);
+  saveP(); saveT(); months.forEach(saveM); cur = null; render();
+}
+async function delEntry(id) {
+  const e = E.find(x => x.id === id); if (!(await ask('Удалить отрезок ' + fdate(e.a) + ' ' + ftime(e.a) + ' (' + fh(e.b - e.a) + ')?'))) return;
+  E = E.filter(x => x.id !== id); saveM(ymOf(e.a)); render();
+}
+let editE = null; const openT = new Set();
+function saveEntry(id) {
+  const e = E.find(x => x.id === id); if (!e) return;
+  const d = $('#ed-' + id).value, m = parseHM($('#em-' + id).value);
+  if (!d || !(m > 0)) return toast('Укажи дату и время в формате чч:мм, например 1:30');
+  const oldYm = ymOf(e.a), t0 = new Date(e.a * 1000);
+  const a = Math.floor(new Date(d + 'T' + (e.w ? String(t0.getHours()).padStart(2, '0') + ':' + String(t0.getMinutes()).padStart(2, '0') : '12:00') + ':00').getTime() / 1000);
+  e.a = a; e.b = a + Math.round(m * 60); editE = null;
+  saveM(oldYm); if (ymOf(a) !== oldYm) saveM(ymOf(a)); render();
+}
+async function delEntryE(id) { await delEntry(id); editE = null; render(); }
+function addManual(tid) {
+  const d = $('#md-' + tid).value, m = parseHM($('#mm-' + tid).value);
+  if (!d || !(m > 0)) return toast('Укажи дату и время в формате чч:мм, например 1:30');
+  const a = Math.floor(new Date(d + 'T12:00:00').getTime() / 1000);
+  E.push({ id: uid(), t: tid, a, b: a + Math.round(m * 60), w: null }); saveM(ymOf(a)); openT.add(tid); render();
+}
+let editW = null, addW = false;
+const atTime = (base, hm) => { const d = new Date(base * 1000), [hh, mm] = hm.split(':').map(Number); d.setHours(hh, mm, 0, 0); return Math.floor(d.getTime() / 1000); };
+function saveShiftTimes(id) {
+  const w = W.find(x => x.id === id), sv = $('#ws-' + id).value, ev = $('#we-' + id).value; if (!w || !sv || !ev) return;
+  const oldYm = ymOf(w.a), a = atTime(w.a, sv); let b = atTime(w.a, ev);
+  if (b <= a) b += 86400;
+  w.a = a; w.b = b; saveW(ymOf(a)); if (oldYm !== ymOf(a)) saveW(oldYm); render();
+}
+function setEntryMin(eid, v) {
+  const e = E.find(x => x.id === eid), m = parseHM(v);
+  if (e && m > 0) { e.b = e.a + Math.round(m * 60); saveM(ymOf(e.a)); }
+  render();
+}
+function addShiftEntry(wid) {
+  const w = W.find(x => x.id === wid), sel = $('#wt-' + wid).value, m = parseHM($('#wm-' + wid).value);
+  if (!w || !sel) return toast('Сначала создай проект');
+  if (!(m > 0)) return toast('Укажи время в формате чч:мм, например 1:30');
+  let tid;
+  if (sel.startsWith('p:')) {
+    const n = $('#wn-' + wid).value.trim(); if (!n) return toast('Впиши название новой задачи');
+    const t = { id: uid(), p: sel.slice(2), n, d: 0 }; T.push(t); saveT(); tid = t.id;
+  } else tid = sel.slice(2);
+  const dur = Math.round(m * 60), last = Math.max(w.a, ...E.filter(e => e.w === wid).map(e => e.b), ...(w.k || []).map(k => k[1]));
+  const a = last + dur <= w.b ? last : Math.max(w.a, w.b - dur);
+  E.push({ id: uid(), t: tid, a, b: a + dur, w: wid }); saveM(ymOf(a)); render();
+}
+function setBreakMin(wid, i, v) { const w = W.find(x => x.id === wid), m = parseHM(v); if (w && w.k[i] && m > 0) { w.k[i][1] = w.k[i][0] + Math.round(m * 60); saveW(ymOf(w.a)); } render(); }
+function delBreak(wid, i) { const w = W.find(x => x.id === wid); if (!w) return; w.k.splice(i, 1); saveW(ymOf(w.a)); render(); }
+function addBreak(wid) {
+  const w = W.find(x => x.id === wid), m = parseHM($('#wb-' + wid).value); if (!w) return;
+  if (!(m > 0)) return toast('Укажи длительность перерыва в формате чч:мм, например 0:15');
+  const dur = Math.round(m * 60), last = Math.max(w.a, ...E.filter(e => e.w === wid).map(e => e.b), ...(w.k || []).map(k => k[1]));
+  const a = last + dur <= w.b ? last : Math.max(w.a, w.b - dur);
+  (w.k = w.k || []).push([a, a + dur]); w.k.sort((x, y) => x[0] - y[0]); saveW(ymOf(w.a)); render();
+}
+function addPastShift() {
+  const d = $('#aw-d').value, sv = $('#aw-s').value, ev = $('#aw-e').value;
+  if (!d || !sv || !ev) return toast('Укажи дату, начало и конец');
+  const base = Math.floor(new Date(d + 'T12:00:00').getTime() / 1000), a = atTime(base, sv); let b = atTime(base, ev);
+  if (b <= a) b += 86400;
+  if (b > now()) return toast('Сессия не может заканчиваться в будущем');
+  const w = { id: uid(), a, b, k: [] }; W.push(w); saveW(ymOf(a));
+  addW = false; ended = w.id; endedLbl = 'Добавленная сессия'; editW = w.id; render();
+}
+let endedLbl = 'Сессия завершена';
+async function delShift(id) {
+  if (!(await ask('Удалить запись о сессии? Время по задачам останется.', 'Удалить', true))) return;
+  const w = W.find(x => x.id === id); W = W.filter(x => x.id !== id); saveW(ymOf(w.a)); render();
+}
+
+/* ===== Резервная копия ===== */
+let lastBk = 0, bkText = null, bkRestore = false;
+function backupData() {
+  return JSON.stringify({ app: 'studio-timer', v: 1, at: now(),
+    F: F.map(f => [f.id, f.n, f.cr, f.cl ?? -1]), P: P.map(p => [p.id, p.n, p.pr, p.c, p.cr, p.h, p.f || '', p.u ? 1 : 0, p.g || [], p.t || {}, p.pp || 0, p.wt || 0, p.cl ?? -1, p.part ? 1 : 0]), T: T.map(t => [t.id, t.p, t.n, t.d, t.dd || '', t.st ? 1 : 0, t.o ?? 0]),
+    E: E.map(e => [e.id, e.t, e.a, e.b, e.w]), W: W.map(w => [w.id, w.a, w.b, w.k || []]), O: opt, S });
+}
+async function backup() {
+  bkText = backupData(); bkRestore = false; lastBk = now();
+  persist(() => store.set('B', String(lastBk))); render();
+  try { await navigator.clipboard.writeText(bkText); toast('Копия скопирована. Отправь её себе в «Избранное» в Telegram или сохрани в заметки.'); }
+  catch { const a = $('#bk'); if (a) { a.focus(); a.select(); } toast('Не вышло скопировать автоматически — текст выделен, скопируй вручную'); }
+}
+async function copyBackup() {
+  try { await navigator.clipboard.writeText(bkText); toast('Скопировано'); }
+  catch { const a = $('#bk'); if (a) { a.focus(); a.select(); } toast('Не вышло скопировать автоматически — текст выделен, скопируй вручную'); }
+}
+function readBkFile(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { $('#rst').value = r.result; }; r.readAsText(f);
+}
+async function restore() {
+  let d; try { d = JSON.parse($('#rst').value.trim()); } catch { return toast('Это не похоже на копию: текст повреждён или вставлен не целиком.'); }
+  if (!d || d.app !== 'studio-timer' || !Array.isArray(d.P) || !Array.isArray(d.T) || !Array.isArray(d.E)) return toast('Это не копия из этого приложения.');
+  if (!(await ask(`Копия от ${fdate(d.at)} ${ftime(d.at)}: проектов ${d.P.length}, задач ${d.T.length}.\n\nВсе текущие данные будут заменены данными из копии.`, 'Восстановить', true))) return;
+  P = d.P.map(r => ({ id: r[0], n: r[1], pr: r[2], c: r[3], cr: r[4], h: r[5] || [], f: r[6] || '', u: r[7] ? 1 : 0, g: Array.isArray(r[8]) ? r[8] : [], t: r[9] && typeof r[9] === 'object' ? r[9] : {}, pp: +r[10] || 0, wt: +r[11] || 0, cl: r[12] ?? -1, part: r.length > 13 ? (r[13] ? 1 : 0) : (+r[10] > 0 && +r[10] < +r[2] ? 1 : 0) }));
+  F = (d.F || []).map(r => ({ id: r[0], n: r[1], cr: r[2], cl: r[3] ?? -1 })); F.forEach((f, i) => { if (!(f.cl >= 0)) f.cl = i % 8; });
+  const keep = { autoBk: opt.autoBk };
+  opt = Object.assign(DEF_OPT(), keep, d.O || {}); setFull(opt.full !== false);
+  T = d.T.map(r => ({ id: r[0], p: r[1] || '', n: r[2], d: r[3], dd: r[4] || '', st: r[5] ? 1 : 0, o: typeof r[6] === 'number' ? r[6] : null }));
+  E = d.E.map(r => ({ id: r[0], t: r[1], a: r[2], b: r[3], w: r[4] || null }));
+  W = (d.W || []).map(r => ({ id: r[0], a: r[1], b: r[2], k: r[3] || [] }));
+  if (S) { S.k = S.k || []; S.br = S.br || null; S.bt = S.bt || null; }
+  S = d.S || null;
+  persist(async () => {
+    const keys = (await store.keys()).filter(k => /^(S$|P-|T-|e-|w-|F-)/.test(k));
+    for (let i = 0; i < keys.length; i += 40) await store.del(keys.slice(i, i + 40));
+    Object.keys(cache).forEach(k => delete cache[k]);
+  });
+  P.sort((x, y) => x.cr - y.cr); fixColors(); fixCatColors(); fixOrder();
+  saveP(); saveT(); saveF(); saveO(); fIdx = 0;
+  new Set(E.map(e => ymOf(e.a))).forEach(saveM);
+  new Set(W.map(w => ymOf(w.a))).forEach(saveW);
+  saveS();
+  persist(async () => toast('Готово, данные восстановлены.'));
+  bkRestore = false; bkText = null; render();
+}
+let bkSending = false;
+async function sendBackup(silent) {
+  if (!BACKUP_URL || bkSending) return false;
+  if (!cloud) { if (!silent) toast('Отправка в чат работает только внутри Telegram — открой приложение через кнопку бота.'); return false; }
+  const d = new Date(), name = 'timer-backup-' + d.toLocaleDateString('sv') + '_' + String(d.getHours()).padStart(2, '0') + '-' + String(d.getMinutes()).padStart(2, '0') + '.json';
+  const caption = `💾 Резервная копия от ${fdate(now())} ${ftime(now())}${silent ? ' (автоматически)' : ''}\nПроектов: ${P.length}, задач: ${T.length}, сессий: ${W.length}\n\nВосстановить: ⚙ Настройки → Восстановить → выбрать этот файл`;
+  bkSending = true; if (!silent) render();
+  try {
+    const r = await fetch(BACKUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ initData: tg.initData, name, caption, data: backupData() }) });
+    const j = await r.json().catch(() => ({ ok: false, error: 'Сервер ответил ' + r.status }));
+    if (!j.ok) throw new Error(j.error || 'неизвестная ошибка');
+    lastBk = now(); persist(() => store.set('B', String(lastBk)));
+    if (!silent) toast('Готово — файл копии уже в чате с ботом.');
+    return true;
+  } catch (e) {
+    let m = (e && e.message) || String(e);
+    if (/chat not found|initiate|blocked/i.test(m)) m += '\n\nОткрой чат с ботом и нажми «Старт» (или разблокируй бота), потом попробуй снова.';
+    else if (/Failed to fetch|NetworkError|Load failed/i.test(m)) m = 'Не удалось связаться с сервером копий. Проверь интернет и попробуй ещё раз.';
+    if (!silent) toast('Не получилось отправить копию: ' + m);
+    return false;
+  } finally { bkSending = false; render(); }
+}
+// отчёт файлом в чат с ботом (тот же сервер, что и для копий)
+let repSending = false;
+async function sendReport() {
+  if (!BACKUP_URL || repSending) return;
+  if (!cloud) return toast('Отправка в чат работает только внутри Telegram — открой приложение через кнопку бота.');
+  const D = periodData(), r = D.r, d0 = new Date(r.a * 1000);
+  const iso = d0.toLocaleDateString('sv'), dl = new Date(r.last * 1000).toLocaleDateString('sv');
+  const name = { week: `otchet-nedelya-${iso}`, month: `otchet-mesyac-${iso.slice(0, 7)}`, q: `otchet-3-mesyaca-${iso.slice(0, 7)}_${dl.slice(0, 7)}`, half: `otchet-polgoda-${iso.slice(0, 7)}_${dl.slice(0, 7)}`, year: `otchet-god-${iso.slice(0, 4)}` }[sMode] + '.txt';
+  const caption = `📊 Отчёт за ${sMode === 'month' || sMode === 'year' ? '' : PER[sMode][1] + ' '}${r.label}${sMode === 'year' ? ' год' : ''}\nЗаработано (закрытые проекты): ${money(D.earned)}${D.cSec ? ' · ' + money(D.avg) + '/ч' : ''}\nВ задачах: ${fh(D.sec)}${D.openSec ? ' (из них ' + fh(D.openSec) + ' в незакрытых)' : ''} · в сессиях: ${fh(D.studio)}, сессий: ${D.ws.length}`;
+  repSending = true; render();
+  try {
+    const res = await fetch(BACKUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ initData: tg.initData, name, caption, data: '﻿' + reportText() }) });
+    const j = await res.json().catch(() => ({ ok: false, error: 'Сервер ответил ' + res.status }));
+    if (!j.ok) throw new Error(j.error || 'неизвестная ошибка');
+    toast('Готово — отчёт уже в чате с ботом.');
+  } catch (e) {
+    let m = (e && e.message) || String(e);
+    if (/chat not found|initiate|blocked/i.test(m)) m += '\n\nОткрой чат с ботом и нажми «Старт» (или разблокируй бота), потом попробуй снова.';
+    else if (/Failed to fetch|NetworkError|Load failed/i.test(m)) m = 'Не удалось связаться с сервером. Проверь интернет и попробуй ещё раз.';
+    toast('Не получилось отправить отчёт: ' + m);
+  } finally { repSending = false; render(); }
+}
+function autoBackup() {
+  const per = opt.autoBk === 'day' ? 86400 : opt.autoBk === 'week' ? 7 * 86400 : 0;
+  if (per && BACKUP_URL && cloud && now() - lastBk > per - 3600) sendBackup(true);
+}
+function chatBkCard() {
+  if (!BACKUP_URL) return '';
+  const ab = opt.autoBk || '';
+  return `<div class="card"><div class="lbl">Автокопия в чат с ботом</div>
+    <div class="hint" style="margin:6px 0 2px">Бот сам пришлёт файл копии, когда ты откроешь приложение и пройдёт выбранный срок.</div>
+    <div class="seg" style="margin:10px 0 2px">${[['', 'Выкл'], ['day', 'Каждый день'], ['week', 'Раз в неделю']].map(([v, t]) => `<button class="${ab === v ? 'on' : ''}" onclick="opt.autoBk='${v}';saveO();render()">${t}</button>`).join('')}</div></div>`;
+}
+function backupCard() {
+  const days = lastBk ? Math.floor((now() - lastBk) / 86400) : null;
+  let h = `<div class="card"><div class="lbl">Резервная копия</div>
+    <div class="hint" style="margin:6px 0 10px">${lastBk ? 'Последняя: ' + fdate(lastBk) + (days > 0 ? ` (${days} дн. назад)` : ' (сегодня)') : 'Ещё ни разу не делал'}${days === null || days >= 14 ? ' · <span style="color:var(--amb)">стоит сделать</span>' : ''}</div>
+    ${BACKUP_URL ? `<button class="btn" onclick="sendBackup()" ${bkSending ? 'disabled style="opacity:.6"' : ''}>${bkSending ? 'Отправляю…' : '📩 Отправить копию в чат'}</button>` : ''}
+    <div class="two"><button class="btn alt" onclick="backup()">${BACKUP_URL ? 'Копия текстом' : 'Сохранить копию'}</button><button class="btn alt" onclick="bkRestore=!bkRestore;bkText=null;render()">Восстановить</button></div>`;
+  if (bkText) h += `<textarea id="bk" readonly style="min-height:120px">${esc(bkText)}</textarea>
+    <div class="hint">Текст уже скопирован. Открой «Избранное» в Telegram, вставь и отправь — это и есть твоя копия.</div>
+    <button class="btn alt" style="margin-top:8px" onclick="bkText=null;render()">Закрыть</button>`;
+  if (bkRestore) h += `<div class="hint" style="margin-top:10px">Вставь текст копии или выбери файл:</div>
+    <textarea id="rst" style="min-height:120px" placeholder='Вставь сюда текст копии'></textarea>
+    <input type="file" accept=".json,.txt,application/json,text/plain" onchange="readBkFile(this)">
+    <button class="btn del" onclick="restore()">Восстановить — заменит текущие данные</button>
+    <button class="btn alt" onclick="bkRestore=false;render()">Закрыть</button>`;
+  return h + '</div>';
+}
+
+/* ===== Периоды и отчёт ===== */
+let wAll = 0;
+const PER = { week: ['неделя', 'неделю'], month: ['месяц', 'месяц'], q: ['3 месяца', '3 месяца'], half: ['полгода', 'полгода'], year: ['год', 'год'] };
+function range() {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  let a, b;
+  if (sMode === 'week') { d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 7 * sOff); a = new Date(d); b = new Date(d); b.setDate(b.getDate() + 7); }
+  else if (sMode === 'q') { a = new Date(d.getFullYear(), d.getMonth() - 2 + 3 * sOff, 1); b = new Date(d.getFullYear(), d.getMonth() + 1 + 3 * sOff, 1); }
+  else if (sMode === 'half') { a = new Date(d.getFullYear(), d.getMonth() - 5 + 6 * sOff, 1); b = new Date(d.getFullYear(), d.getMonth() + 1 + 6 * sOff, 1); }
+  else if (sMode === 'year') { a = new Date(d.getFullYear() + sOff, 0, 1); b = new Date(d.getFullYear() + sOff + 1, 0, 1); }
+  else { a = new Date(d.getFullYear(), d.getMonth() + sOff, 1); b = new Date(d.getFullYear(), d.getMonth() + sOff + 1, 1); }
+  const last = new Date(b); last.setDate(last.getDate() - 1);
+  const mY = x => x.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }).replace(' г.', '');
+  const label = sMode === 'week' ? a.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ' – ' + last.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+    : sMode === 'half' || sMode === 'q' ? (a.getFullYear() === last.getFullYear() ? a.toLocaleDateString('ru-RU', { month: 'long' }) : mY(a)) + ' – ' + mY(last)
+    : sMode === 'year' ? String(a.getFullYear()) : mY(a);
+  return { a: a.getTime() / 1000, b: b.getTime() / 1000, last: last.getTime() / 1000, label };
+}
+function periodData() {
+  const r = range(), es = allE().filter(e => e.a >= r.a && e.a < r.b), by = {}; let ibSec = 0;
+  for (const e of es) {
+    const pid = pidOf(e); if (!pid || !proj(pid)) { if (task(e.t)) ibSec += e.b - e.a; continue; }
+    const x = by[pid] = by[pid] || { sec: 0, tasks: {} };
+    x.sec += e.b - e.a; x.tasks[e.t] = (x.tasks[e.t] || 0) + e.b - e.a;
+  }
+  const rows = Object.keys(by).map(pid => { const p = proj(pid), cnt = !!p.c && !p.u, rt = cnt ? rate(p) : 0; return { p, np: !!p.u, open: !p.c, cnt, sec: by[pid].sec, tasks: by[pid].tasks, rt, earned: rt * by[pid].sec / 3600 }; }).sort((x, y) => y.sec - x.sec);
+  const sumBy = f => rows.filter(f).reduce((a, x) => a + x.sec, 0), cSec = sumBy(x => x.cnt), openSec = sumBy(x => x.open), npSec = sumBy(x => !x.open && x.np);
+  const sec = rows.reduce((x, y) => x + y.sec, 0) + ibSec, earned = rows.reduce((x, y) => x + y.earned, 0);
+  const ws = allW().filter(w => w.a >= r.a && w.a < r.b).sort((x, y) => x.a - y.a);
+  const studio = ws.reduce((x, w) => x + wWork(w), 0), breaks = ws.reduce((x, w) => x + brSec(w), 0), nbr = ws.reduce((x, w) => x + (w.k || []).length, 0), wids = new Set(ws.map(w => w.id)), inShift = sum(es.filter(e => wids.has(e.w)));
+  return { r, es, rows, sec, earned, npSec, cSec, openSec, ibSec, avg: cSec > 0 ? earned / (cSec / 3600) : 0, ws, studio, breaks, nbr, inShift,
+    closed: P.filter(p => p.c >= r.a && p.c < r.b), byRate: rows.filter(x => x.cnt && x.rt > 0).slice().sort((x, y) => y.rt - x.rt) };
+}
+function shiftInfo(w) {
+  const es = shiftEs(w.id), work = sum(es), byT = {};
+  es.forEach(e => byT[e.t] = (byT[e.t] || 0) + e.b - e.a);
+  const tasks = Object.entries(byT).sort((x, y) => y[1] - x[1]).map(([t, s]) => { const tk = task(t); return { t, s, done: !!(tk && tk.d && tk.d >= w.a && tk.d <= w.b + 5) }; });
+  return { dur: wWork(w), wall: w.b - w.a, brk: brSec(w), nbr: (w.k || []).length, work, tasks };
+}
+function reportText() {
+  const D = periodData(), r = D.r;
+  let t = `ОТЧЁТ ПО РАБОТЕ — ${PER[sMode][0]}: ${r.label} (${fdate(r.a)} – ${fdate(r.last)})\n`;
+  t += `Валюта: рубли. Рабочая сессия = время от старта до завершения, включая перерывы (во время перерыва общий таймер идёт, на паузе только задача; перерывы указаны отдельно). Работа над задачами = время, когда шёл таймер конкретной задачи. ВАЖНО: заработок и ставки считаются ТОЛЬКО по закрытым проектам — у них цена и часы окончательные. Ставка закрытого проекта = полная стоимость ÷ все часы работы над задачами проекта; «заработано за период» = часы по задачам за период × эта ставка. Незакрытые проекты показаны только по часам и в заработок не входят: когда проект закроется, его деньги появятся в отчётах за те периоды, когда над ним работали. Теги проекта — «Категория: значение».\n\n`;
+  t += `ИТОГО ЗА ПЕРИОД\n`;
+  t += `Рабочих сессий: ${D.ws.length}; время в рабочих сессиях (вместе с перерывами): ${hd(D.studio)} ч (${fh(D.studio)})\n`;
+  t += `Перерывы: ${D.nbr} шт., всего ${hd(D.breaks)} ч (${fh(D.breaks)})${D.nbr ? ', в среднем ' + fh(D.breaks / D.nbr) : ''}\n`;
+  t += `Работа над задачами: ${hd(D.sec)} ч (${fh(D.sec)})${D.studio ? `; из них внутри сессий ${hd(D.inShift)} ч = ${pct(D.inShift, D.studio)}% времени сессий` : ''}\n`;
+  t += `Заработано (только закрытые проекты): ${money(D.earned)}\n`;
+  t += `Средняя ставка по закрытым проектам: ${D.cSec ? money(D.avg) + '/ч (по ' + hd(D.cSec) + ' ч работы)' : '— (в периоде нет работы по закрытым проектам)'}\n`;
+  if (D.ibSec) t += `Время на дела без проекта (в заработок не входит): ${hd(D.ibSec)} ч (${fh(D.ibSec)})\n`;
+  if (D.openSec) t += `Время в незакрытых проектах (в заработок и ставку не входит, посчитается после закрытия): ${hd(D.openSec)} ч (${fh(D.openSec)})\n`;
+  if (D.npSec) t += `Время в закрытых проектах без указанной цены (не учтено): ${hd(D.npSec)} ч (${fh(D.npSec)})\n`;
+  if (D.studio) t += `Заработано в пересчёте на час рабочих сессий: ${money(D.earned / (D.studio / 3600))}/ч\n`;
+  t += `Закрыто проектов: ${D.closed.length}${D.closed.length ? ' на сумму ' + money(D.closed.reduce((x, p) => x + p.pr, 0)) + ' (' + D.closed.map(p => p.n).join(', ') + ')' : ''}\n`;
+  if (D.rows.length) {
+    if (F.length) {
+      t += `\nПО ПАПКАМ\n`;
+      byFolder(D.rows).forEach(x => t += `- ${x.n}: ${hd(x.sec)} ч, заработано ${money(x.earned)}, ставка ${x.psec ? money(x.earned / (x.psec / 3600)) + '/ч' : '—'}${x.osec ? `; из них ${hd(x.osec)} ч в незакрытых проектах (не учтены)` : ''}; проекты: ${x.ps.join(', ')}\n`);
+    }
+    const tagMap = {};
+    D.rows.forEach(x => projTags(x.p).map(tagLabel).forEach(g => { const o = tagMap[g] = tagMap[g] || { sec: 0, psec: 0, osec: 0, earned: 0, ps: [] }; o.sec += x.sec; if (x.cnt) o.psec += x.sec; if (x.open) o.osec += x.sec; o.earned += x.earned; o.ps.push(x.p.n); }));
+    const catIdx = g => { const i = cats().findIndex(c => g.startsWith(c.n + ': ')); return i < 0 ? 999 : i; };
+    const tagList = Object.entries(tagMap).sort((a, b) => catIdx(a[0]) - catIdx(b[0]) || b[1].sec - a[1].sec);
+    if (tagList.length) {
+      t += `\nПО ТЕГАМ (сгруппировано по категориям; проект учитывается в каждом своём теге)\n`;
+      tagList.forEach(([g, o]) => t += `- ${g}: ${hd(o.sec)} ч, заработано ${o.psec ? money(o.earned) : '—'}, ставка ${o.psec ? money(o.earned / (o.psec / 3600)) + '/ч' : '—'}${o.osec ? `; из них ${hd(o.osec)} ч в незакрытых проектах (не учтены)` : ''}; проекты: ${o.ps.join(', ')}\n`);
+    }
+    t += `\nПРОЕКТЫ\n`;
+    D.rows.forEach((x, i) => {
+      const p = x.p;
+      t += `\n${i + 1}. ${p.n} [папка: ${fname(p)}; ${p.c ? 'закрыт ' + fdate(p.c) : 'в работе' + (isW(p) ? ' (в ожидании с ' + fdate(p.wt) + ')' : '') + ' — не закрыт, в заработок не входит'}]${projTags(p).length ? '\n   Теги: ' + tagsTxt(p) : ''}\n   Стоимость: ${priceTxt(p)}`;
+      if (p.h.length) t += ` (изначально ${money(base(p))}; ` + p.h.map(h => `${h[1] > 0 ? '+' : ''}${money(h[1])} ${fdate(h[0])}${h[2] ? ' «' + h[2] + '»' : ''}`).join('; ') + ')';
+      if (!p.c && !p.u) t += p.part ? `\n   Оплачено не всё: получено ${money(paid(p))}, осталось получить ${money(owed(p))}` : `\n   Оплата: получена полностью`;
+      t += `\n   Часов по проекту всего: ${hd(projSec(p.id))}; из них за период: ${hd(x.sec)}\n`;
+      t += x.open ? `   Ставка и заработок: — (проект не закрыт; посчитаются после закрытия)\n`
+        : x.np ? `   Ставка: — (цена не указана)\n   Заработано за период: — (цена не указана)\n`
+        : `   Ставка: ${money(x.rt)}/ч (итоговая — проект закрыт)\n   Заработано за период: ${money(x.earned)}\n`;
+      t += `   Задачи (часы за период / всего по задаче):\n`;
+      T.filter(tk => tk.p === p.id && (x.tasks[tk.id] || 0) > 0).sort((a, b) => x.tasks[b.id] - x.tasks[a.id])
+        .forEach(tk => t += `   - ${tk.n} [${tk.d ? 'готова ' + fdate(tk.d) : 'не завершена'}]: ${hd(x.tasks[tk.id])} ч / ${hd(taskSec(tk.id))} ч\n`);
+    });
+  }
+  if (D.byRate.length > 1) {
+    t += `\nРЕЙТИНГ ЗАКРЫТЫХ ПРОЕКТОВ ПО СТАВКЕ (от дорогих к дешёвым)\n`;
+    D.byRate.forEach((x, i) => t += `${i + 1}. ${x.p.n} (${fname(x.p)}${projTags(x.p).length ? '; ' + tagsTxt(x.p) : ''}) — ${money(x.rt)}/ч\n`);
+  }
+  const allP = P.slice().sort((x, y) => (!!x.c - !!y.c) || x.cr - y.cr);
+  if (allP.length) {
+    t += `\nВСЕ ПРОЕКТЫ (на ${fdate(now())} ${ftime(now())}; ставка — только у закрытых)\n`;
+    allP.forEach(p => {
+      const s2 = projSec(p.id);
+      t += `- ${p.n} [${fname(p)}; ${p.c ? 'закрыт ' + fdate(p.c) : 'в работе, не закрыт'}]${projTags(p).length ? ' {' + tagsTxt(p) + '}' : ''}: стоимость ${priceTxt(p)}` +
+        (p.h.length ? ` (изначально ${money(base(p))}, доплаты: ` + p.h.map(h => `${h[1] > 0 ? '+' : ''}${money(h[1])} ${fdate(h[0])}${h[2] ? ' «' + h[2] + '»' : ''}`).join('; ') + ')' : '') +
+        `; часов всего ${hd(s2)}; ставка ${!p.c ? '— (проект не закрыт)' : p.u ? '— (цена не указана)' : s2 ? money(rate(p)) + '/ч' : '— (часов нет)'}\n`;
+    });
+  }
+  if (D.ws.length) {
+    t += `\nРАБОЧИЕ СЕССИИ (сводка)\n`;
+    D.ws.forEach(w => {
+      const s2 = shiftInfo(w);
+      t += `- ${fdate(w.a)} ${ftime(w.a)}–${w.open ? 'идёт сейчас' : ftime(w.b)}: сессия ${hm(s2.dur)} (вместе с перерывами), в задачах ${hm(s2.work)} (${pct(s2.work, s2.dur)}%), перерывы ${s2.nbr ? s2.nbr + ' шт. / ' + hm(s2.brk) : 'нет'}; задачи: ` +
+        (s2.tasks.length ? s2.tasks.map(x => `${pname(x.t)} / ${tname(x.t)} ${hm(x.s)}${x.done ? ' (завершена)' : ''}`).join('; ') : 'нет') + '\n';
+    });
+  }
+  if (D.es.length || D.ws.length) {
+    t += `\nХРОНОЛОГИЯ ПО ДНЯМ\nКаждый промежуток работы над задачей: время, длительность (ч:мм), папка / проект / задача, ставка и сумма за промежуток (только у закрытых проектов).\n`;
+    const days = {}, add = (ts, it) => (days[dayStart(ts)] = days[dayStart(ts)] || []).push(it);
+    D.ws.forEach(w => {
+      add(w.a, { a: w.a, o: 0, s: `▶ ${ftime(w.a)} начало рабочей сессии` });
+      (w.k || []).forEach(k => add(w.a, { a: k[0], o: 1, s: `☕ ${ftime(k[0])}–${ftime(k[1])} перерыв (${hm(k[1] - k[0])})` }));
+      add(w.a, w.open ? { a: now(), o: 2, s: `… сессия идёт сейчас` } : { a: w.b, o: 2, s: `■ ${ftime(w.b)} конец рабочей сессии — сессия ${hm(wWork(w))} (вместе с перерывами), в задачах ${hm(sum(shiftEs(w.id)))}` });
+    });
+    D.es.forEach(e => {
+      const p = proj(pidOf(e)), ok = p && p.c && !p.u, rt = ok ? rate(p) : 0, d = e.b - e.a, m = rt * d / 3600;
+      add(e.a, { a: e.a, o: 1, sec: d, m, s: `${ftime(e.a)}–${ftime(e.b)} (${hm(d)}) ${p ? fname(p) + ' / ' + p.n : 'без проекта'} / ${tname(e.t)} — ${!p ? 'дело без проекта, без денег' : !p.c ? 'проект не закрыт' : p.u ? 'цена не указана' : money(rt) + '/ч → ' + money(m)}${e.w ? '' : ' [добавлено вручную, время начала условное]'}` });
+    });
+    let runSec = 0, runM = 0;
+    Object.keys(days).sort((x, y) => x - y).forEach(d => {
+      const list = days[d].sort((x, y) => x.a - y.a || x.o - y.o), sec = list.reduce((x, i) => x + (i.sec || 0), 0), m = list.reduce((x, i) => x + (i.m || 0), 0);
+      runSec += sec; runM += m;
+      t += `\n${new Date(d * 1000).toLocaleDateString('ru-RU', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} — в задачах ${hm(sec)}, заработано (закрытые проекты) ${money(m)} (с начала периода: ${hm(runSec)}, ${money(runM)})\n`;
+      list.forEach(i => t += `   ${i.s}\n`);
+    });
+  }
+  if (D.es.length) {
+    t += `\nВСЕ ЗАПИСИ ТАБЛИЦЕЙ (CSV, разделитель «;»)\nдата;начало;конец;минут;папка;проект;теги;задача;ставка_руб_в_час;статус_проекта;сумма_руб;источник\n`;
+    D.es.slice().sort((x, y) => x.a - y.a).forEach(e => {
+      const p = proj(pidOf(e)), ok = p && p.c && !p.u, rt = ok ? rate(p) : 0, d = e.b - e.a;
+      t += [fdate(e.a), ftime(e.a), ftime(e.b), Math.round(d / 60), p ? fname(p) : '', p ? p.n : '', p ? tagsTxt(p, ' | ') : '', tname(e.t), ok ? Math.round(rt) : '', !p ? 'без проекта' : !p.c ? 'не закрыт' : p.u ? 'нет цены' : 'итоговая', ok ? Math.round(rt * d / 3600) : '', e.w ? 'сессия' : 'вручную']
+        .map(v => String(v).replace(/;/g, ',')).join(';') + '\n';
+    });
+  }
+  if (!D.rows.length && !D.ws.length) t += '\nЗа период работы не было.\n';
+  return t;
+}
+async function copyReport() {
+  try { await navigator.clipboard.writeText(report); toast('Скопировано'); }
+  catch { const a = $('#rep'); if (a) { a.focus(); a.select(); } toast('Не вышло скопировать автоматически — текст выделен, скопируй вручную'); }
+}
+async function makeReport() {
+  report = reportText(); render();
+  try { await navigator.clipboard.writeText(report); toast('Отчёт скопирован — вставь его в нейронку'); }
+  catch { const a = $('#rep'); if (a) { a.focus(); a.select(); } toast('Не вышло скопировать автоматически — текст выделен, скопируй вручную'); }
+}
+
+/* ===== Экраны ===== */
+try { if (V('6.1')) { tg.setHeaderColor('#0a0a0c'); tg.setBackgroundColor('#0a0a0c'); } if (V('7.10')) tg.setBottomBarColor('#0a0a0c'); } catch {}
+// первые 8 цветов — прежние (у старых проектов цвет не изменится)
+const COLS = ['#4a8cff', '#8b7cff', '#4ad6f0', '#ff8a4a', '#ff6fb1', '#f0d24a', '#5cf0a8', '#b6b0ff', '#ff5d5d', '#a3e05a', '#2fc4a0', '#c9a27a', '#e86f4a', '#ffcf6f', '#d68cff', '#6fa8ff', '#9ae6ff', '#ff9e9e', '#7f8aa3', '#e0e0e6'];
+const byFolderCol = p => opt.folderCol && p && folder(p.f); // цвет задаёт папка
+const pColIdx = p => byFolderCol(p) ? folder(p.f).cl : p && p.cl >= 0 ? p.cl : 0;
+const colorOf = pid => COLS[(pColIdx(proj(pid)) >= 0 ? pColIdx(proj(pid)) : 0) % COLS.length];
+let cpkF = null;
+function setFColor(id, i) { const f = folder(id); if (f) { f.cl = i; saveF(); } cpkF = null; render(); }
+function setFolderCol(on) {
+  if (!on) { P.forEach(p => { if (byFolderCol(p)) p.cl = folder(p.f).cl; }); saveP(); } // цвет папки остаётся за проектом
+  opt.folderCol = on; saveO(); render();
+}
+// цвет закрепляется за проектом: старым — по прежнему порядку, новым — наименее занятый
+function fixColors() { let ch = false; P.forEach((p, i) => { if (!(p.cl >= 0)) { p.cl = i % 8; ch = true; } }); return ch; }
+function fixCatColors() { let ch = false; cats().forEach((c, i) => { if (typeof c.cl !== 'number') { c.cl = [1, 3, 2, 4, 5, 6, 7, 0][i % 8]; ch = true; } }); return ch; }
+function freeColor() { const n = COLS.map((_, i) => P.filter(p => !p.c && p.cl === i).length); return n.indexOf(Math.min(...n)); }
+const swatches = (cur, fn) => `<div class="cpk">${COLS.map((c, i) => `<button style="background:${c}" class="${i === cur ? 'on' : ''}" onclick="${fn}(${i})" aria-label="Цвет ${i + 1}"></button>`).join('')}</div>`;
+function setPColor(pid, i) { proj(pid).cl = i; saveP(); render(); }
+const catColor = c => COLS[c && typeof c.cl === 'number' && c.cl >= 0 ? c.cl % COLS.length : 1];
+const tagStyle = col => opt.plainTags ? '' : `style="background:${col}24;color:${col}"`;
+let cpkCat = null;
+function setCatColor(id, i) { const c = cats().find(x => x.id === id); if (c) { c.cl = i; saveO(); } cpkCat = null; render(); }
+const dot = (c, live) => `<span class="dot ${live ? 'live' : ''}" style="background:${c}"></span>`;
+// Кольцо сессии по хронологии: каждый отрезок работы — зелёная дуга, каждый перерыв — оранжевая, на своём месте во времени.
+// Круг целиком = вся сессия от старта до текущего момента.
+function ringSegs(c) {
+  if (!S) return '';
+  const tn = Date.now() / 1000, a0 = S.w.a, tot = Math.max(1, tn - a0), m = c.m, r = c.r, L = c.len;
+  const seg = (a, b, col) => {
+    const st = Math.max(0, (a - a0) / tot) * L, ln = Math.max(0, Math.min(L - st, (b - a) / tot * L));
+    return ln < .5 ? '' : `<circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="${col}" stroke-width="${c.sw}" stroke-dasharray="${ln} ${L}" stroke-dashoffset="${-st}" transform="rotate(-90 ${m} ${m})"/>`;
+  };
+  const brs = S.k.concat(S.br ? [[S.br, tn]] : []);
+  const es = E.filter(e => e.w === S.w.id).concat(S.t && S.r ? [{ a: S.r, b: tn }] : []);
+  return es.map(e => seg(e.a, e.b, '#4a8cff')).join('') + brs.map(k => seg(k[0], k[1], '#ffb648')).join('');
+}
+let ringGeo = null;
+function ring(size, sw) {
+  const r = (size - sw) / 2, m = size / 2; ringGeo = { r, m, sw, len: 2 * Math.PI * r };
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="#1c1c21" stroke-width="${sw}"/><g id="rsegs">${ringSegs(ringGeo)}</g></svg>`;
+}
+function setRing() { const g = $('#rsegs'); if (g && ringGeo) g.innerHTML = ringSegs(ringGeo); }
+(function ringLoop() { if (S && !document.hidden) setRing(); requestAnimationFrame(ringLoop); })(); // плавно, каждый кадр
+const kpi = (l, v, sub) => `<div class="card kpi"><div class="lbl">${l}</div><div class="v">${v}</div>${sub ? `<div class="hint">${sub}</div>` : ''}</div>`;
+
+function shiftCard(w, editable) {
+  const s = shiftInfo(w), dur = Math.max(1, s.wall), p = Math.min(100, pct(s.work, s.dur));
+  let h = `<div class="card"><div class="row"><span class="lbl">${fday(w.a)}</span><span class="hint num">${ftime(w.a)} – ${w.open ? 'сейчас' : ftime(w.b)}</span></div>
+    <div class="row" style="margin-top:8px"><span class="big" style="font-size:24px">${fh(s.dur)}</span><span class="num"><b style="color:var(--acc)">${p}%</b> <span class="hint">в задачах</span></span></div>
+    <div class="tl">${shiftEs(w.id).map(e => `<i style="left:${Math.min(99, Math.max(0, (e.a - w.a) / dur * 100))}%;width:${Math.max(.8, Math.min(100, (e.b - e.a) / dur * 100))}%;background:${colorOf(pidOf(e))}"></i>`).join('')}${(w.k || []).map(k => `<i style="left:${Math.min(99, Math.max(0, (k[0] - w.a) / dur * 100))}%;width:${Math.max(.8, Math.min(100, (k[1] - k[0]) / dur * 100))}%;background:repeating-linear-gradient(135deg,rgba(255,182,72,.7) 0 3px,rgba(255,182,72,.15) 3px 6px)"></i>`).join('')}</div>` +
+    (s.nbr ? `<div class="hint" style="margin-bottom:4px"><span style="color:var(--amb)">☕</span> перерывы ${fh(s.brk)}${s.nbr > 1 ? ' · ' + s.nbr + ' шт.' : ''}</div>` : '') +
+    s.tasks.map(x => `<div class="line"><span>${dot(colorOf((task(x.t) || {}).p))}${esc(tname(x.t))} <span class="hint">${esc(pname(x.t))}</span>${x.done ? ' <span class="top">✓</span>' : ''}</span><span class="num hint">${fh(x.s)}</span></div>`).join('');
+  if (editable && !w.open) h += editW === w.id ? shiftEditor(w) : `<button class="btn alt" style="margin-top:10px;padding:10px" onclick="editW='${w.id}';render()">Изменить сессию</button>`;
+  return h + '</div>';
+}
+function taskOptions() {
+  const ps = P.slice().sort((x, y) => (!!x.c - !!y.c) || y.cr - x.cr);
+  if (!ps.length) return '<option value="">Сначала создай проект</option>';
+  return ps.map(p => `<optgroup label="${esc(p.n)}${p.c ? ' (закрыт)' : ''}">` +
+    T.filter(t => t.p === p.id).sort((a, b) => (!!a.d - !!b.d)).map(t => `<option value="t:${t.id}">${esc(t.n)}${t.d ? ' ✓' : ''}</option>`).join('') +
+    `<option value="p:${p.id}">＋ новая задача в «${esc(p.n)}»</option></optgroup>`).join('');
+}
+function shiftEditor(w) {
+  const es = E.filter(e => e.w === w.id).sort((a, b) => a.a - b.a), work = sum(es);
+  return `<div style="border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
+    <div class="lbl">Время сессии</div>
+    <div class="inl"><input id="ws-${w.id}" type="time" value="${ftime(w.a)}"><span class="hint">–</span><input id="we-${w.id}" type="time" value="${ftime(w.b)}"><button class="btn sm alt" onclick="saveShiftTimes('${w.id}')">OK</button></div>
+    <div class="lbl" style="margin-top:8px">Задачи в сессии</div>` +
+    (es.length ? es.map(e => `<div class="line"><span>${dot(colorOf(pidOf(e)))}${esc(tname(e.t))} <span class="hint">${esc(pname(e.t))}</span></span>
+      <span class="inl"><input ${hmAttrs} value="${hm(e.b - e.a)}" style="width:78px;margin:0;padding:8px;text-align:right" class="num" onchange="setEntryMin('${e.id}',this.value)"><button class="x" onclick="delEntry('${e.id}')">✕</button></span></div>`).join('')
+      : '<div class="hint" style="padding:6px 0">Пока ни одной задачи</div>') +
+    (work + brSec(w) > wWork(w) ? `<div class="hint" style="color:var(--amb)">Время задач и перерывов (${fh(work + brSec(w))}) больше длительности сессии (${fh(wWork(w))}) — проверь время начала, конца и перерывы.</div>` : '') +
+    `<div class="lbl" style="margin-top:12px">Перерывы</div>` +
+    ((w.k || []).length ? w.k.map((k, i) => `<div class="line"><span><span style="color:var(--amb)">☕</span> <span class="hint num">${ftime(k[0])}</span></span>
+      <span class="inl"><input ${hmAttrs} value="${hm(k[1] - k[0])}" style="width:78px;margin:0;padding:8px;text-align:right" class="num" onchange="setBreakMin('${w.id}',${i},this.value)"><button class="x" onclick="delBreak('${w.id}',${i})">✕</button></span></div>`).join('')
+      : '<div class="hint" style="padding:6px 0">Без перерывов</div>') +
+    `<div class="inl"><input id="wb-${w.id}" ${hmAttrs} placeholder="Перерыв, чч:мм" class="num"><button class="btn sm alt" onclick="addBreak('${w.id}')">+ Перерыв</button></div>` +
+    `<div class="lbl" style="margin-top:12px">Добавить задачу</div>
+    <select id="wt-${w.id}" onchange="document.getElementById('wn-${w.id}').style.display=this.value.startsWith('p:')?'block':'none'">${taskOptions()}</select>
+    <input id="wn-${w.id}" placeholder="Название новой задачи" maxlength="100" style="display:${P.length && !T.length ? 'block' : 'none'}">
+    <div class="inl"><input id="wm-${w.id}" ${hmAttrs} placeholder="Время, чч:мм" class="num"><button class="btn sm" onclick="addShiftEntry('${w.id}')">Добавить</button></div>
+    <button class="btn del" onclick="delShift('${w.id}')">Удалить сессию</button>
+    <button class="btn alt" onclick="editW=null;render()">Готово</button></div>`;
+}
+function pickProject(p) {
+  const ts = T.filter(t => t.p === p.id && !t.d && !(S && S.t === t.id));
+  return `<div class="card"><div class="row" style="margin-bottom:6px"><span>${dot(colorOf(p.id))}<b>${esc(p.n)}</b></span></div>` +
+    ts.map(t => `<button class="item" onclick="go('${t.id}')"><span>${esc(t.n)}</span><span class="hint num">${fh(taskSec(t.id))} <span style="color:var(--acc);margin-left:6px">▶</span></span></button>`).join('') +
+    `<div class="inl" style="margin-top:4px"><input id="nt-${p.id}" placeholder="Новая задача" maxlength="100" onkeydown="if(event.key==='Enter')newTask('${p.id}',true,this)"><button class="btn sm" onclick="newTask('${p.id}',true,this)">▶</button></div></div>`;
+}
+function pickerHTML() { return inboxPick() + pickerProj(); }
+function pickerProj() {
+  const act = P.filter(p => !p.c).sort((x, y) => y.cr - x.cr);
+  if (!act.length) return `<div class="card"><h3>Создай первый проект</h3>${projectForm()}</div>`;
+  const list = t => act.filter(p => inTab(p, t.id));
+  const tabs = projTabs(true).map(t => Object.assign({}, t, { c: list(t).length }));
+  if (kIdx >= tabs.length) kIdx = 0;
+  let h = tabs.length > 1 ? `<div class="ftabs">${tabs.map((t, i) => `<button class="ftab ${i === kIdx ? 'on' : ''}" onclick="goFolder(${i})">${esc(t.n)}<span>${t.c}</span></button>`).join('')}</div>` : '';
+  h += `<div class="pager" id="pager"><div class="track" style="transform:translateX(${-kIdx * 100}%)">` + tabs.map(t => {
+    const ps = list(t), rf = folder(t.id);
+    return `<section class="page">${ps.length ? ps.map(pickProject).join('') : `<div class="hint center" style="padding:24px 0 10px">${t.id === WAIT ? 'Нет проектов в ожидании' : rf ? 'В этой папке нет проектов в работе' : 'Нет проектов в работе'}</div>`}
+      ${t.id === WAIT ? '' : `<details class="card" ${ps.length ? '' : 'open'}><summary>Новый проект${rf ? ' в «' + esc(rf.n) + '»' : ''}</summary><div style="margin-top:10px">${projectForm(rf ? t.id : '')}</div></details>`}</section>`;
+  }).join('') + '</div></div>';
+  return h;
+}
+const projectForm = (fid = '') => `<input id="np-n-${fid || 'x'}" placeholder="Название проекта" maxlength="80">
+  <input id="np-p-${fid || 'x'}" type="text" inputmode="decimal" placeholder="Цена, ₽ — можно позже">
+  <details class="sw" id="np-ppd-${fid || 'x'}" style="margin:0 0 6px;text-align:left"><summary style="text-align:left;padding:2px 4px 8px">Не вся сумма получена</summary><input id="np-pp-${fid || 'x'}" type="text" inputmode="decimal" placeholder="Сколько уже заплатили, ₽ (0 — ничего)"></details>
+  ${catFields('np-t-' + (fid || 'x') + '-')}${catLists()}` +
+  (F.length ? `<div class="lbl" style="margin:2px 0 0 4px">Папка</div><select id="np-f-${fid || 'x'}"><option value="">Без папки</option>${F.map(f => `<option value="${f.id}" ${f.id === fid ? 'selected' : ''}>${esc(f.n)}</option>`).join('')}</select>` : '') + `
+  <button class="btn" onclick="newProject('${fid}')">Создать проект</button>`;
+
+function viewHome() {
+  let h = '';
+  if (S) {
+    const ws = shiftEs(S.w.id), work = sum(ws), dur = sessWork(), brk = sessBreaks();
+    h += `<div class="ringwrap">${ring(256, 8)}<div class="in">
+      <div class="lbl" ${S.br ? 'style="color:var(--amb)"' : ''}>${S.br ? '☕ Перерыв · сессия идёт' : 'Сессия · с ' + ftime(S.w.a)}</div>
+      <div class="clock" id="wclock">${fd(dur)}</div>
+      <div class="hint num"><span id="wwork">${fh(work)}</span> · <span id="wpct" style="color:var(--acc)">${pct(work, dur)}%</span></div></div></div>
+      <div class="hint center" style="margin-bottom:10px"><span style="white-space:nowrap"><i class="lg" style="background:var(--acc)"></i>задачи</span> · <span style="white-space:nowrap"><i class="lg" style="background:var(--amb)"></i>перерывы <span id="wbrk">${brk ? fh(brk) : ''}</span></span> · <span style="white-space:nowrap"><i class="lg" style="background:#2a2a31"></i>остальное</span></div>`;
+    if (S.br) {
+      h += `<div class="card center" style="border-color:rgba(255,182,72,.35)"><div class="lbl" style="color:var(--amb)">☕ Перерыв</div>
+        <div class="clock" id="bclock" style="color:var(--amb);margin:10px 0 4px">${fd(now() - S.br)}</div>
+        <div class="hint">${S.bt ? 'задача на паузе, ' : ''}рабочая сессия продолжается</div>
+        <button class="btn" style="margin-top:16px" onclick="endBreak()">Вернуться к работе</button>
+        ${S.bt ? `<div class="hint" style="margin-top:6px">продолжится: ${esc(tname(S.bt))}</div>` : ''}</div>`;
+    } else {
+      h += `<button class="btn warn" onclick="takeBreak()">☕ Перерыв</button>`;
+    }
+    let sc = ''; const byT = {}; ws.forEach(e => byT[e.t] = (byT[e.t] || 0) + e.b - e.a);
+    if (Object.keys(byT).length) sc = `<div class="card"><div class="lbl" style="margin-bottom:6px">В этой сессии</div>` + Object.entries(byT).sort((x, y) => y[1] - x[1]).map(([t, s]) => { const tk = task(t); const dn = tk && tk.d && tk.d >= S.w.a; return `<div class="line"><span ${dn ? 'style="color:var(--mut);text-decoration:line-through"' : ''}>${dot(colorOf((tk || {}).p))}${esc(tname(t))}${dn ? ' <span class="top">✓</span>' : ''}</span><span class="num hint" style="white-space:nowrap">${fh(s)}${dn ? ` <button class="ib" style="padding:4px 9px" onclick="todoDone('${t}')" aria-label="Вернуть в работу">↺</button>` : ''}</span></div>`; }).join('') + '</div>';
+    if (S.br) { h += sc; } else if (S.t) {
+      const pid = (task(S.t) || {}).p;
+      h += `<div class="card"><div class="row"><span class="lbl">${dot(S.r ? colorOf(pid) : 'var(--amb)', !!S.r)}${S.r ? 'в работе' : 'пауза'}</span><span class="hint">${esc(pname(S.t))}</span></div>
+        <div style="font-size:19px;font-weight:600;margin:10px 0 2px">${esc(tname(S.t))}</div>
+        <div class="clock" style="font-size:34px;margin-bottom:14px;${S.r ? '' : 'color:var(--mut)'}" id="tclock">${fd(taskSec(S.t))}</div>
+        <div class="two">${S.r ? `<button class="btn warn" onclick="pauseTask()">Пауза</button>` : `<button class="btn alt" onclick="resumeTask()">Продолжить</button>`}
+        <button class="btn ok" onclick="doneTask()">Готово ✓</button></div>
+        <button class="btn alt" onclick="releaseTask()">Отложить — продолжу потом</button></div>${sc}
+        <details class="sw"><summary>Переключиться на другую задачу</summary>${pickerHTML()}</details>`;
+    } else {
+      h += sc + `<h2>Над чем работаем?</h2>${pickerHTML()}`;
+    }
+    h += endAsk ? `<div class="card" id="endc" style="border-color:rgba(255,93,93,.35);margin-top:8px"><div style="font-weight:600;margin-bottom:4px">Завершить рабочую сессию?</div>
+      <div class="hint" style="margin-bottom:10px">Общий таймер остановится${S.t && S.r ? ', таймер задачи тоже' : ''}.</div>
+      <div class="two"><button class="btn alt" onclick="endAsk=false;render()">Отмена</button><button class="btn end" style="background:var(--red);color:#fff;border:0" onclick="endShift()">Завершить</button></div></div>`
+      : `<button class="btn end" style="margin-top:8px" onclick="endAsk=true;render();const c=$('#endc');if(c)c.scrollIntoView({block:'nearest',behavior:'smooth'})">Завершить рабочую сессию</button>`;
+    return h;
+  }
+  const t0 = dayStart(now()), tw = W.filter(w => w.a >= t0), ted = sum(allE().filter(e => e.a >= t0)), tst = tw.reduce((x, w) => x + wWork(w), 0);
+  const hr = new Date().getHours(), greet = hr >= 5 && hr < 12 ? 'Доброе утро' : hr >= 12 && hr < 18 ? 'Добрый день' : hr >= 18 && hr < 23 ? 'Добрый вечер' : 'Доброй ночи';
+  const today = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+  h += `<section class="hero">
+    <div class="hero-top"><div class="lbl">${today}</div><div class="greet">${greet}</div></div>
+    <div class="hero-mid"><button class="go" onclick="startShift()"><span>Поехали</span></button><div class="lbl go-cap">начать рабочую сессию</div></div>
+    <div class="hero-bot">
+      <div class="lbl" style="margin:0 0 10px 4px">Сегодня</div>
+      <div class="trio"><div><div class="v">${hm(tst)}</div><div class="hint">в сессиях</div></div><div><div class="v">${hm(ted)}</div><div class="hint">в задачах</div></div><div><div class="v">${tw.length}</div><div class="hint">${tw.length === 1 ? 'сессия' : tw.length >= 2 && tw.length <= 4 ? 'сессии' : 'сессий'}</div></div></div>` +
+    (addW ? `<div class="card" style="margin-top:14px"><div class="lbl">Прошедшая сессия</div>
+      <input id="aw-d" type="date" value="${new Date().toLocaleDateString('sv')}">
+      <div class="inl"><input id="aw-s" type="time" value="12:00"><span class="hint">–</span><input id="aw-e" type="time" value="18:00"></div>
+      <div class="two"><button class="btn alt" onclick="addW=false;render()">Отмена</button><button class="btn" onclick="addPastShift()">Создать</button></div></div>`
+      : `<button class="link" onclick="addW=true;render()">+ Добавить прошедшую сессию</button>`) +
+    `</div></section>`;
+  h += todayCard();
+  if (ended) { const w = W.find(x => x.id === ended); if (w) h += `<h2>${endedLbl}</h2>` + shiftCard(w, true); }
+  const rest = tw.filter(w => w.id !== ended);
+  if (rest.length) h += `<h2>Сессии сегодня</h2>` + rest.slice().reverse().map(w => shiftCard(w, true)).join('');
+  return h;
+}
+
+let settings = false;
+const gearBtn = () => `<button class="gear" onclick="settings=true;render()" aria-label="Настройки"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>`;
+function foldersCard() {
+  const dis = 'disabled style="opacity:.2"';
+  let h = `<div class="card"><div class="lbl" style="margin-bottom:4px">Папки</div>`;
+  h += F.length ? F.map((f, i) => `<div class="line">${ren === 'f:' + f.id ? renInput(f.n, 40)
+    : `<span>${opt.folderCol ? `<button class="cdot" style="background:${COLS[f.cl >= 0 ? f.cl : 0]}" onclick="cpkF=cpkF==='${f.id}'?null:'${f.id}';render()" aria-label="Цвет папки"></button>` : '📁 '}${esc(f.n)} <span class="hint num">${P.filter(p => p.f === f.id).length}</span></span><span style="white-space:nowrap">
+      <button class="x" onclick="moveFolder('${f.id}',-1)" ${i ? '' : dis} aria-label="Выше">↑</button><button class="x" onclick="moveFolder('${f.id}',1)" ${i < F.length - 1 ? '' : dis} aria-label="Ниже">↓</button><button class="x" onclick="startRen('f:${f.id}')" aria-label="Переименовать">✎</button><button class="x" onclick="delFolder('${f.id}')" aria-label="Удалить" style="color:var(--red)">✕</button></span>`}</div>${opt.folderCol && cpkF === f.id ? swatches(f.cl, `setFColor.bind(null,'${f.id}')`) + '<div style="height:8px"></div>' : ''}`).join('')
+    : '<div class="hint" style="padding:8px 0">Папок пока нет</div>';
+  h += `<div class="inl" style="margin-top:8px"><input id="nf" placeholder="Название папки" maxlength="40" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newFolder(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newFolder()">Создать</button></div>`;
+  h += `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Вкладка «Все»<div class="hint">${opt.hideAll ? 'Скрыта. Проекты без папки — во вкладке «Без папки».' : 'Показывает все проекты сразу'}</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.hideAll ? '' : 'checked'} onchange="opt.hideAll=!this.checked;fIdx=0;kIdx=0;saveO();render()" aria-label="Показывать вкладку «Все»"><i></i></label></div>`;
+  h += `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Вкладка «Завершённые»<div class="hint">${opt.hideDone ? 'Скрыта. Закрытые проекты остаются в своих папках.' : 'Закрытые проекты — отдельно, свежие сверху'}</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.hideDone ? '' : 'checked'} onchange="opt.hideDone=!this.checked;fIdx=0;kIdx=0;saveO();render()" aria-label="Показывать вкладку «Завершённые»"><i></i></label></div>`;
+  h += `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Цвет по папкам<div class="hint">${opt.folderCol ? 'Проекты окрашены в цвет своей папки. Цвет папки — кружок у названия.' : 'Выключено: у каждого проекта свой цвет'}</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.folderCol ? 'checked' : ''} onchange="setFolderCol(this.checked)" aria-label="Цвет по папкам"><i></i></label></div>`;
+  h += `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Режим «В ожидании»<div class="hint">${opt.noWait ? 'Выключен. Отметки сохранены — включишь, и проекты вернутся во вкладку.' : 'Переключатель в проекте и отдельная вкладка'}</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.noWait ? '' : 'checked'} onchange="opt.noWait=!this.checked;fIdx=0;kIdx=0;saveO();render()" aria-label="Режим «В ожидании»"><i></i></label></div>`;
+  return h + '</div>';
+}
+let resetAsk = false;
+function resetAll() {
+  S = null; P = []; T = []; E = []; W = []; F = []; opt = DEF_OPT(); setFull(true);
+  lastBk = 0; bkText = null; bkRestore = false; report = null; ended = null; editW = null; addW = false; endAsk = false; resetAsk = false;
+  fIdx = 0; kIdx = 0; cur = null; ren = null; sMode = 'month'; sOff = 0;
+  persist(async () => {
+    const keys = (await store.keys()).filter(k => /^(S$|B$|O$|P-|T-|e-|w-|F-)/.test(k));
+    for (let i = 0; i < keys.length; i += 40) await store.del(keys.slice(i, i + 40));
+    Object.keys(cache).forEach(k => delete cache[k]);
+  });
+  persist(async () => toast('Все данные удалены. Приложение вернулось к начальному состоянию.'));
+  settings = false; tab = 'home'; render();
+}
+function resetCard() {
+  if (!resetAsk) return `<div class="card"><div class="lbl">Сброс</div><div class="hint" style="margin:6px 0 10px">Удаляет все проекты, задачи, папки, сессии и настройки.</div>
+    <button class="btn del" onclick="resetAsk=true;render();const c=$('#rstc');if(c)c.scrollIntoView({block:'nearest',behavior:'smooth'})">Сбросить все данные</button></div>`;
+  return `<div class="card" id="rstc" style="border-color:rgba(255,93,93,.45)"><div class="lbl" style="color:var(--red)">⚠ Сброс всех данных</div>
+    <div style="margin:8px 0 6px;font-weight:600">Все данные будут удалены безвозвратно.</div>
+    <div class="hint" style="margin-bottom:12px">Проекты, задачи, время, сессии, перерывы, папки и настройки исчезнут на всех устройствах. Восстановить их можно будет только из резервной копии — сначала сделай её.</div>
+    <button class="btn alt" onclick="${BACKUP_URL ? 'sendBackup()' : 'resetAsk=false;backup()'}">${BACKUP_URL ? '📩 Сначала отправить копию в чат' : 'Сначала сделать резервную копию'}</button>
+    <div class="two" style="margin-top:4px"><button class="btn alt" onclick="resetAsk=false;render()">Отмена</button><button class="btn" style="background:var(--red);color:#fff" onclick="resetAll()">Удалить всё</button></div></div>`;
+}
+try { localStorage.removeItem('st-sub'); } catch {} // остаток старой версии с подпиской
+function appCard() {
+  if (!canFull) return '';
+  return `<div class="card"><div class="lbl">Приложение</div><div class="row" style="margin-top:8px"><span>Во весь экран<div class="hint">Скрывает шапку Telegram</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.full === false ? '' : 'checked'} onchange="opt.full=this.checked;saveO();setFull(this.checked);render()" aria-label="Во весь экран"><i></i></label></div></div>`;
+}
+function viewSettings() {
+  return `<a class="back" href="#" onclick="settings=false;render();return false">‹ Назад</a><h2>Настройки</h2>` + appCard() + foldersCard() + catsCard() + backupCard() + chatBkCard() +
+    `<div class="card"><div class="lbl">Где хранятся данные</div>` + (cloud
+      ? `<div class="hint" style="margin-top:6px">Данные привязаны к твоему аккаунту Telegram и хранятся в облаке Telegram.</div>`
+      : `<div class="hint" style="margin-top:6px;color:var(--amb)">Связь с Telegram не установлена — данные сейчас хранятся только на этом устройстве.</div><div class="hint" style="margin-top:6px">${!tg ? 'Не загрузился модуль Telegram (telegram-web-app.js). Открой приложение через кнопку бота; если не помогло — проверь интернет/VPN и обнови Telegram.' : !tg.initData ? 'Приложение открыто не через кнопку бота.' : 'Версия Telegram устарела (' + esc(tg.version || '?') + '), обнови приложение.'}</div>`) + `</div>` + resetCard();
+}
+function projCard(p, showF) {
+  const s = projSec(p.id), done = T.filter(t => t.p === p.id && t.d).length, all = T.filter(t => t.p === p.id).length;
+  return `<button class="card pcard" onclick="cur='${p.id}';render()">
+    <div class="row"><span>${dot(colorOf(p.id))}<b>${esc(p.n)}</b></span>${p.c ? '<span class="badge done">закрыт</span>' : isW(p) ? '<span class="badge wait">в ожидании</span>' : '<span class="badge">в работе</span>'}</div>
+    <div class="row" style="margin-top:10px">${p.u ? '<span style="color:var(--amb)">цена не указана</span>' : `<span class="num">${money(p.pr)}${!p.c && p.part ? ` <span class="hint">· получено ${money(paid(p))}</span>` : ''}</span>`}<span class="num" style="color:${s && !p.u && p.c ? 'var(--acc)' : 'var(--dim)'}">${s && !p.u && p.c ? money(rate(p)) + '/ч' : p.c ? '—' : ''}</span></div>
+    <div class="hbar"><i style="width:${all ? done / all * 100 : 0}%;background:${colorOf(p.id)}"></i></div>
+    ${projTags(p).length ? `<div class="tags" style="margin-top:8px">${projTags(p).map(x => `<span class="tag" ${tagStyle(x.col)}>${esc(tagLabel(x))}</span>`).join('')}</div>` : ''}
+    <div class="row hint" style="margin-top:6px"><span class="num">${fh(s)}${showF && folder(p.f) ? `</span><span>📁 ${esc(folder(p.f).n)}` : ''}</span><span class="num">задачи ${done}/${all}</span></div></button>`;
+}
+const cats = () => opt.tc || [];
+const catName = id => (cats().find(c => c.id === id) || {}).n;
+// все теги проекта: по категориям + старые без категории
+const projTags = p => cats().filter(c => p.t && String(p.t[c.id] || '').trim()).map(c => ({ c: c.n, v: p.t[c.id], col: catColor(c) })).concat((p.g || []).map(v => ({ c: '', v, col: COLS[1] })));
+const tagLabel = x => x.c ? `${x.c}: ${x.v}` : '#' + x.v;
+const tagsTxt = (p, sep = '; ') => projTags(p).map(tagLabel).join(sep);
+const catValues = id => [...new Set(P.map(p => p.t && p.t[id]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
+const catLists = () => ''; // подсказки — своим списком (acOpen), datalist в Telegram на телефоне не работает
+const catFields = (pref, p) => cats().map(c => `<label class="tf"><span${opt.plainTags ? '' : ` style="color:${catColor(c)}"`}>${esc(c.n)}:</span><input id="${pref}${c.id}" data-ac="${c.id}" autocomplete="off" autocapitalize="sentences" maxlength="60" value="${esc((p && p.t && p.t[c.id]) || '')}"${p ? ` onchange="setTag('${p.id}','${c.id}',this.value)"` : ''}></label>`).join('');
+function setTag(pid, cid, v) { const p = proj(pid); p.t = p.t || {}; v = String(v).trim().slice(0, 60); if (v) p.t[cid] = v; else delete p.t[cid]; saveP(); render(); }
+function addCat(done) {
+  const el = $('#nc'), n = el.value.trim().slice(0, 30); if (!n) return done ? el.blur() : el.focus();
+  if (cats().some(c => c.n.toLowerCase() === n.toLowerCase())) return toast('Такая категория уже есть');
+  const used = cats().map(c => c.cl); opt.tc = cats().concat([{ id: uid(), n, cl: [1, 2, 3, 4, 5, 6, 7, 0, 8, 9, 10, 11].find(i => !used.includes(i)) ?? 1 }]); saveO();
+  if (done) { el.blur(); render(); return; }
+  render(); const e2 = $('#nc'); if (e2) e2.focus();
+}
+function moveCat(id, d) { const a = cats().slice(), i = a.findIndex(c => c.id === id), j = i + d; if (i < 0 || j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; opt.tc = a; saveO(); render(); }
+async function delCat(id) {
+  const c = cats().find(x => x.id === id), used = P.filter(p => p.t && p.t[id]).length;
+  if (!(await ask(`Удалить категорию «${c.n}»?${used ? `\n\nЕё значения пропадут у ${used} ${used === 1 ? 'проекта' : 'проектов'}.` : ''}`, 'Удалить', true))) return;
+  opt.tc = cats().filter(x => x.id !== id); P.forEach(p => { if (p.t && p.t[id]) delete p.t[id]; }); saveO(); if (used) saveP(); render();
+}
+function catsCard() {
+  const dis = 'disabled style="opacity:.2"', a = cats();
+  let h = `<div class="card"><div class="lbl" style="margin-bottom:4px">Категории тегов</div>`;
+  h += a.length ? a.map((c, i) => `<div class="line">${ren === 'c:' + c.id ? renInput(c.n, 30)
+    : `<span>${opt.plainTags ? '' : `<button class="cdot" style="background:${catColor(c)}" onclick="cpkCat=cpkCat==='${c.id}'?null:'${c.id}';render()" aria-label="Цвет категории"></button>`}${esc(c.n)} <span class="hint num">${catValues(c.id).length}</span></span><span style="white-space:nowrap">
+      <button class="x" onclick="moveCat('${c.id}',-1)" ${i ? '' : dis} aria-label="Выше">↑</button><button class="x" onclick="moveCat('${c.id}',1)" ${i < a.length - 1 ? '' : dis} aria-label="Ниже">↓</button><button class="x" onclick="startRen('c:${c.id}')" aria-label="Переименовать">✎</button><button class="x" onclick="delCat('${c.id}')" aria-label="Удалить" style="color:var(--red)">✕</button></span>`}</div>${cpkCat === c.id && !opt.plainTags ? swatches(typeof c.cl === 'number' && c.cl >= 0 ? c.cl : 1, `setCatColor.bind(null,'${c.id}')`) + '<div style="height:8px"></div>' : ''}`).join('')
+    : '<div class="hint" style="padding:8px 0">Категорий пока нет. Каждая категория — отдельное поле при создании проекта.</div>';
+  h += `<div class="inl" style="margin-top:8px"><input id="nc" placeholder="Название категории" maxlength="30" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();addCat(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="addCat()">Создать</button></div>`;
+  return h + `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Цветные теги<div class="hint">${opt.plainTags ? 'Выключено: теги нейтральные. Цвета сохранены — вернутся при включении.' : 'Теги окрашены в цвет своей категории'}</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.plainTags ? '' : 'checked'} onchange="opt.plainTags=!this.checked;cpkCat=null;saveO();render()" aria-label="Цветные теги"><i></i></label></div></div>`;
+}
+const parseTags = v => [...new Set(String(v || '').split(/[,;\n]+/).map(x => x.trim().replace(/^#/, '').slice(0, 30)).filter(Boolean))].slice(0, 12);
+const allTags = () => [...new Set(P.flatMap(p => p.g || []))].sort((a, b) => a.localeCompare(b, 'ru'));
+const tagChips = (g, del) => (g || []).map((x, i) => `<span class="tag">#${esc(x)}${del ? `<button onclick="${del}(${i})" aria-label="Убрать тег">✕</button>` : ''}</span>`).join('');
+function addTag(pid) {
+  const el = $('#tg-' + pid), add = parseTags(el.value); if (!add.length) return el.focus();
+  const p = proj(pid); p.g = [...new Set([...(p.g || []), ...add])].slice(0, 12); saveP(); render();
+  const n = $('#tg-' + pid); if (n) n.focus();
+}
+function delTag(pid, i) { const p = proj(pid); p.g.splice(i, 1); saveP(); render(); }
+let newPOpen = false;
+function openNewProj() {
+  if ([WAIT, DONE].includes((projTabs()[fIdx] || {}).id)) fIdx = 0; // в «Ожидании» проекты не создаются
+  newPOpen = true; render();
+  const el = $('#pager .page:nth-child(' + (fIdx + 1) + ') input[id^="np-n-"]'); if (el) { el.focus(); $('#app').scrollTop = 0; }
+}
+function projPage(list, fid, top) {
+  const rf = folder(fid), sub = rf ? ' в «' + esc(rf.n) + '»' : '';
+  let h = top ? `<div class="card" style="border-color:rgba(74,140,255,.35)"><div class="row" style="margin-bottom:8px"><span class="lbl">Новый проект${sub}</span><button class="x" onclick="newPOpen=false;render()" aria-label="Закрыть">✕</button></div>${projectForm(rf ? fid : '')}</div>` : '';
+  h += list.length ? list.map(p => projCard(p, !fid || fid === WAIT || fid === DONE)).join('') : `<div class="hint center" style="padding:28px 0 12px">${fid === WAIT ? 'Нет проектов в ожидании' : fid === DONE ? 'Завершённых проектов пока нет' : fid ? 'В этой папке пока нет проектов' : 'Пока нет проектов'}${top || fid === WAIT || fid === DONE ? '' : '<br>Нажми «+ Проект» вверху, чтобы создать'}</div>`;
+  return h;
+}
+function viewProjects() {
+  const sorted = P.slice().sort((x, y) => (!!x.c - !!y.c) || (x.c ? y.c - x.c : y.cr - x.cr));
+  const tabs = projTabs();
+  if (fIdx >= tabs.length) fIdx = 0;
+  let h = `<div class="row" style="margin:18px 60px 10px 0;min-height:40px"><h2 style="margin:0">Проекты</h2>${newPOpen ? '' : '<button class="btn sm" style="margin:0;padding:9px 14px;font-size:15px" onclick="openNewProj()">+ Проект</button>'}</div>`;
+  if (tabs.length > 1) h += `<div class="ftabs">${tabs.map((t, i) => `<button class="ftab ${i === fIdx ? 'on' : ''}" onclick="goFolder(${i})">${esc(t.n)}<span>${t.c}</span></button>`).join('')}</div>`;
+  const list = t => sorted.filter(p => inTab(p, t.id));
+  h += `<div class="pager" id="pager"><div class="track" style="transform:translateX(${-fIdx * 100}%)">` + tabs.map((t, i) => `<section class="page">${projPage(list(t), t.id, newPOpen && i === fIdx)}</section>`).join('') + '</div></div>';
+  return h;
+}
+function viewProject(p) {
+  const s = projSec(p.id), ts = T.filter(t => t.p === p.id).sort((a, b) => (!!a.d - !!b.d) || a.o - b.o), c = colorOf(p.id);
+  const done = ts.filter(t => t.d).length;
+  let h = `<a class="back" href="#" onclick="cur=null;ren=null;render();return false">‹ ${folder(p.f) ? esc(folder(p.f).n) : 'Проекты'}</a>` +
+    (ren === 'p:' + p.id ? `<h2>${renInput(p.n, 80)}</h2>`
+      : `<h2>${dot(c)}${esc(p.n)} <button class="pen" onclick="startRen('p:${p.id}')">✎</button></h2>`) +
+    (p.c ? `<span class="badge done">закрыт ${fdate(p.c)}</span>` : isW(p) ? `<span class="badge wait">в ожидании с ${fdate(p.wt)}</span>` : '<span class="badge">в работе</span>') +
+    (p.c || opt.noWait ? '' : `<div class="card row"><span>В ожидании</span><label class="tgl"><input type="checkbox" ${p.wt ? 'checked' : ''} onchange="setWait('${p.id}',this.checked)" aria-label="В ожидании"><i></i></label></div>`) +
+    `<div class="grid">${kpi('Время', hd(s) + ' ч', fh(s))}${kpi(p.c ? 'Итоговая ставка' : 'Ставка сейчас', s && !p.u ? money(rate(p)) : '—', p.u ? 'нужна цена' : p.c ? 'в час, итоговая' : 'в час, предварительная')}
+      ${kpi('Стоимость', p.u ? '—' : money(p.pr), p.u ? 'не указана' : p.h.length ? 'доплат: ' + p.h.length : '')}${kpi('Задачи', done + '/' + ts.length, ts.length ? pct(done, ts.length) + '% готово' : '')}</div>
+    ${cats().length || (p.g || []).length ? `<div class="card"><div class="lbl" style="margin-bottom:6px">Теги</div>${catFields('pt-' + p.id + '-', p)}${catLists()}
+      ${(p.g || []).length ? `<div class="hint" style="margin:6px 0 6px">Без категории:</div><div class="tags">${tagChips(p.g, `delTag.bind(null,'${p.id}')`)}</div>` : ''}</div>` : ''}
+    <details class="card cdet"><summary><span class="lbl">Цвет</span>${dot(colorOf(p.id))}</summary>${byFolderCol(p) ? `<div class="row" style="margin-top:8px;justify-content:flex-start">${dot(colorOf(p.id))}<span class="hint">цвет папки «${esc(folder(p.f).n)}» — меняется в настройках</span></div>` : swatches(p.cl, `setPColor.bind(null,'${p.id}')`)}</details>
+    <div class="card"><div class="lbl">Папка</div><select onchange="setFolder('${p.id}',this.value)" style="margin-bottom:0"><option value="">Без папки</option>${F.map(f => `<option value="${f.id}" ${p.f === f.id ? 'selected' : ''}>${esc(f.n)}</option>`).join('')}</select></div>
+    <div class="card"><div class="lbl">Стоимость, ₽</div>
+      <input type="text" inputmode="decimal" value="${p.u ? '' : p.pr}" placeholder="Впиши цену, ₽" onchange="setPrice('${p.id}',this.value)" class="num">
+      ${p.u ? '<div class="hint" style="color:var(--amb);margin-bottom:6px">Пока цены нет, время считается, но проект не попадает в заработок и ставки. Впишешь цену — всё пересчитается.</div>' : ''}
+      ${p.h.length ? `<div class="hint" style="margin-bottom:4px">Изначально ${money(base(p))}</div>` + p.h.map((x, i) => `<div class="line"><span><span class="num" style="color:${x[1] > 0 ? 'var(--acc)' : 'var(--red)'}">${x[1] > 0 ? '+' : ''}${money(x[1])}</span> <span class="hint">${fdate(x[0])}${x[2] ? ' · ' + esc(x[2]) : ''}</span></span><button class="x" onclick="delPay('${p.id}',${i})">✕</button></div>`).join('') : ''}
+      ${p.u ? '' : `<details><summary>Доплата</summary><div style="margin-top:8px">
+        <input id="pay-a" type="text" inputmode="decimal" placeholder="Сумма, ₽ (минус — если вычли)">
+        <input id="pay-n" placeholder="За что (необязательно)" maxlength="60">
+        <button class="btn alt" onclick="addPay('${p.id}')">Добавить</button></div></details>`}</div>
+    ${p.u || p.c ? '' : !p.part ? `<div class="card"><div class="row"><span class="lbl">Оплата</span><span><span style="color:var(--acc)">✓</span> Оплачено полностью</span></div><button class="btn alt" style="margin:10px 0 0" onclick="setPart('${p.id}',true)">Не вся сумма получена</button></div>`
+      : `<div class="card"><div class="row"><span class="lbl">Сколько заплатили, ₽</span>${p.pr > 0 ? `<span class="hint num">${owed(p) ? 'осталось ' + money(owed(p)) : 'всё получено'}</span>` : ''}</div>
+      <input id="paid-${p.id}" type="text" inputmode="decimal" value="${p.pp || 0}" placeholder="0" onchange="setPaid('${p.id}',this.value)" class="num">
+      ${p.pr > 0 ? `<div class="hbar" style="margin-top:0"><i style="width:${Math.min(100, paid(p) / p.pr * 100)}%;background:var(--acc)"></i></div>` : ''}
+      <button class="btn alt" style="margin-top:10px" onclick="setPart('${p.id}',false)">Оплачено полностью</button></div>`}
+    <div class="card"><div class="row" style="margin-bottom:4px"><span class="lbl">Задачи</span>${ts.length > 1 ? `<button class="link" style="margin:0;padding:0;color:var(--acc)" onclick="ordP=ordP==='${p.id}'?null:'${p.id}';render()">${ordP === p.id ? 'Готово' : '⇅ Порядок'}</button>` : ''}</div>`;
+  if (!ts.length) h += '<div class="hint" style="padding:8px 0">Пока нет задач</div>';
+  for (const t of ts) {
+    const es = E.filter(e => e.t === t.id).sort((a, b) => b.a - a.a), running = S && S.t === t.id, sec = taskSec(t.id);
+    h += `<div class="task ${t.d ? 'd' : ''}"><div class="row">` +
+      (ren === 't:' + t.id ? renInput(t.n, 100)
+        : `<span><span class="tn">${esc(t.n)}</span>${t.dd && !t.d ? ' ' + dueChip(t.dd) : ''}${t.st && !t.d ? ' <span style="color:var(--amb)">★</span>' : ''}<button class="pen" onclick="startRen('t:${t.id}')">✎</button></span><span style="white-space:nowrap">
+      ${ordP === p.id ? `<button class="ib" onclick="moveTask('${t.id}',-1)" aria-label="Выше">↑</button><button class="ib" onclick="moveTask('${t.id}',1)" aria-label="Ниже">↓</button></span>` : `<span class="hint num">${fh(sec)}</span>
+      ${!t.d && !p.c ? `<button class="ib play" onclick="go('${t.id}')">${running ? '●' : '▶'}</button>` : ''}
+      ${!p.c ? `<button class="ib" onclick="toggleTask('${t.id}')">${t.d ? '↺' : '✓'}</button>` : ''}</span>`}`) +
+      `</div><div class="hbar"><i style="width:${s ? sec / s * 100 : 0}%;background:${t.d ? 'var(--dim)' : c}"></i></div>
+      <details ${openT.has(t.id) ? 'open' : ''} ontoggle="this.open?openT.add('${t.id}'):openT.delete('${t.id}')"><summary>Время по задаче</summary>
+        ${es.map(e => editE === e.id ? `<div class="card" style="margin:6px 0;padding:12px;background:var(--s2)"><div class="hint" style="margin-bottom:4px">${e.w ? 'Отрезок из сессии ' + fdate(e.a) + ' ' + ftime(e.a) : 'Время, добавленное вручную'}</div>
+          <div class="inl"><input id="ed-${e.id}" type="date" value="${new Date(e.a * 1000).toLocaleDateString('sv')}" style="background:var(--s1)"><input id="em-${e.id}" ${hmAttrs} value="${hm(e.b - e.a)}" class="num" style="max-width:90px;background:var(--s1)"></div>
+          <div class="two"><button class="btn alt" style="background:var(--s1)" onclick="editE=null;render()">Отмена</button><button class="btn" onclick="saveEntry('${e.id}')">Сохранить</button></div>
+          <button class="btn del" onclick="delEntryE('${e.id}')">Удалить это время</button></div>`
+          : `<div class="line" onclick="editE='${e.id}';openT.add('${t.id}');render()" style="cursor:pointer"><span class="hint num">${fdate(e.a)} ${e.w ? ftime(e.a) + '–' + ftime(e.b) : '· вручную'}</span><span class="num">${fh(e.b - e.a)} <span class="pen">✎</span></span></div>`).join('') || '<div class="hint" style="padding:6px 0">Пусто</div>'}
+        <div class="inl"><input id="md-${t.id}" type="date" value="${new Date().toLocaleDateString('sv')}"><input id="mm-${t.id}" ${hmAttrs} placeholder="чч:мм" class="num" style="max-width:90px"><button class="btn sm alt" onclick="addManual('${t.id}')">+</button></div>
+        <button class="btn del" onclick="delTask('${t.id}')">Удалить задачу</button></details></div>`;
+  }
+  if (!p.c) h += `<div class="inl" style="margin-top:8px"><input id="nt-${p.id}" placeholder="Новая подзадача" maxlength="100" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newTask('${p.id}',false,this,true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newTask('${p.id}')">+</button></div>`;
+  h += '</div>';
+  h += p.c ? `<button class="btn alt" onclick="reopenProject('${p.id}')">Вернуть проект в работу</button>`
+           : `<button class="btn ok" onclick="closeProject('${p.id}')">Проект закрыт ✓ — посчитать ставку</button>`;
+  h += `<button class="btn del" style="margin-top:10px" onclick="delProject('${p.id}')">Удалить проект</button>`;
+  return h;
+}
+function dayCols(D) {
+  const r = D.r, days = [], byM = sMode === 'q' || sMode === 'half' || sMode === 'year';
+  for (let d = new Date(r.a * 1000); d.getTime() / 1000 < r.b; byM ? d.setMonth(d.getMonth() + 1) : d.setDate(d.getDate() + 1)) {
+    const a = d.getTime() / 1000, n = byM ? new Date(d.getFullYear(), d.getMonth() + 1, 1) : new Date(d); if (!byM) n.setDate(n.getDate() + 1); const b = n.getTime() / 1000;
+    days.push({ d: new Date(d), st: D.ws.filter(w => w.a >= a && w.a < b).reduce((x, w) => x + wWork(w), 0), wk: sum(D.es.filter(e => e.a >= a && e.a < b)) });
+  }
+  const mx = Math.max(3600, ...days.map(x => Math.max(x.st, x.wk)));
+  const lab = x => byM ? x.d.toLocaleDateString('ru-RU', { month: 'short' }).replace('.', '') : sMode === 'week' ? x.d.toLocaleDateString('ru-RU', { weekday: 'short' }) : (x.d.getDate() === 1 || x.d.getDate() % 5 === 0 ? x.d.getDate() : '');
+  return `<div class="card"><div class="row"><span class="lbl">Часы по ${byM ? 'месяцам' : 'дням'}</span><span class="hint num">макс ${hd(mx)} ч</span></div>
+    <div class="cols">${days.map(x => `<div class="c"><b style="height:${x.st / mx * 100}%"></b><i style="height:${x.wk / mx * 100}%"></i></div>`).join('')}</div>
+    <div class="axis">${days.map(x => `<span>${lab(x)}</span>`).join('')}</div>
+    <div class="leg"><span><i style="background:#5c5c6e"></i>в сессиях</span><span><i style="background:var(--acc)"></i>в задачах</span></div></div>`;
+}
+function viewStats() {
+  const D = periodData(), r = D.r;
+  let h = `<h2>Статистика</h2><div class="seg">${[['week', 'Неделя'], ['month', 'Месяц'], ['q', '3 мес'], ['half', '6 мес'], ['year', 'Год']].map(([m, t]) => `<button class="${sMode === m ? 'on' : ''}" onclick="sMode='${m}';sOff=0;wAll=0;report=null;render()">${t}</button>`).join('')}</div>
+    <div id="swp"><div class="per"><button onclick="statSwipe(-1)" aria-label="Назад">‹</button><b>${r.label}</b><button onclick="statSwipe(1)" aria-label="Вперёд">›</button></div>
+    <div class="card"><div class="lbl">Заработано</div><div class="big" style="font-size:40px;margin-top:6px">${money(D.earned)}</div>
+      ${D.closed.length ? `<div class="hint">закрыто проектов: ${D.closed.length} на ${money(D.closed.reduce((x, p) => x + p.pr, 0))}</div>` : ''}
+      ${D.openSec ? `<div class="hint" style="margin-top:4px">+ ${fh(D.openSec)} работы в незакрытых проектах — посчитается после закрытия</div>` : ''}
+      ${D.npSec ? `<div class="hint" style="color:var(--amb)">${fh(D.npSec)} — в закрытых проектах без цены, не учтено</div>` : ''}</div>
+    <div class="grid">${kpi('В задачах', hd(D.sec) + ' ч', fh(D.sec))}${kpi('Ставка', D.cSec ? money(D.avg) : '—', 'по закрытым проектам')}
+      ${kpi('В сессиях', hd(D.studio) + ' ч', 'сессий: ' + D.ws.length + (D.nbr ? ' · ☕ ' + fh(D.breaks) : ''))}${kpi('Полезно', pct(D.inShift, D.studio) + '%', D.studio ? money(D.earned / (D.studio / 3600)) + '/ч за время сессий' : 'нет сессий')}</div>`;
+  h += dayCols(D);
+  if (D.rows.length || D.ibSec) {
+    h += `<div class="card"><div class="lbl">Куда ушло время</div><div class="stack">${D.rows.map(x => `<i style="flex:${x.sec};background:${colorOf(x.p.id)}"></i>`).join('')}${D.ibSec ? `<i style="flex:${D.ibSec};background:#7f8aa3"></i>` : ''}</div>` +
+      (D.ibSec ? `<div class="line"><span>${dot('#7f8aa3')}Дела без проекта</span><span class="num"><span class="hint">${pct(D.ibSec, D.sec)}% · </span>${hd(D.ibSec)} ч · <span class="hint">без денег</span></span></div>` : '') +
+      D.rows.map(x => `<div class="line"><span>${dot(colorOf(x.p.id))}${esc(x.p.n)}</span><span class="num"><span class="hint">${pct(x.sec, D.sec)}% · </span>${hd(x.sec)} ч · ${x.open ? '<span class="hint">в работе</span>' : x.np ? '<span style="color:var(--amb)">без цены</span>' : money(x.earned)}</span></div>`).join('') + '</div>';
+  }
+  if (F.length && D.rows.length) {
+    const fs = byFolder(D.rows);
+    h += `<div class="card"><div class="lbl" style="margin-bottom:4px">По папкам</div>` + fs.map(x => `<div style="padding:9px 0"><div class="row"><span>📁 ${esc(x.n)}</span><span class="num">${hd(x.sec)} ч · ${money(x.earned)}</span></div>
+      <div class="row hint" style="margin-top:2px"><span>${pct(x.sec, D.sec)}% времени</span><span class="num">${x.psec ? money(x.earned / (x.psec / 3600)) + '/ч' : ''}</span></div>
+      <div class="hbar"><i style="width:${pct(x.sec, D.sec)}%;background:var(--tx)"></i></div></div>`).join('') + '</div>';
+  }
+  if (D.byRate.length) {
+    const n = D.byRate.length, mx = D.byRate[0].rt;
+    h += `<div class="card"><div class="lbl" style="margin-bottom:4px">Ставка закрытых проектов</div>` + D.byRate.map((x, i) =>
+      `<div style="padding:9px 0"><div class="row"><span>${esc(x.p.n)}${n > 1 && i === 0 ? ' <span class="badge done">дороже всего</span>' : n > 1 && i === n - 1 ? ' <span class="badge" style="color:var(--red)">дешевле всего</span>' : ''}</span><span class="num">${money(x.rt)}/ч</span></div>
+       <div class="hbar"><i style="width:${x.rt / mx * 100}%;background:${colorOf(x.p.id)}"></i></div></div>`).join('') + '</div>';
+  }
+  const per = PER[sMode][1];
+  h += BACKUP_URL
+    ? `<button class="btn" style="margin-top:4px" onclick="sendReport()" ${repSending ? 'disabled style="opacity:.6;margin-top:4px"' : ''}>${repSending ? 'Отправляю…' : '📩 Отчёт за ' + per + ' в чат'}</button><button class="btn alt" onclick="makeReport()">Скопировать отчёт текстом</button>`
+    : `<button class="btn" style="margin-top:4px" onclick="makeReport()">Выгрузить отчёт за ${per}</button>`;
+  if (report) h += `<div class="card" id="repc"><div class="row" style="margin-bottom:6px"><span class="lbl">Отчёт · скопирован</span><button class="x" onclick="report=null;render()" aria-label="Закрыть отчёт">✕</button></div>
+    <textarea id="rep" readonly>${esc(report)}</textarea>
+    <div class="two"><button class="btn alt" onclick="copyReport()">Скопировать ещё раз</button><button class="btn alt" onclick="report=null;render()">Закрыть</button></div></div>`;
+  if (D.ws.length) { const all = D.ws.slice().reverse(), lim = wAll || all.length <= 20 ? all.length : 20;
+    h += `<h2>Сессии</h2>` + all.slice(0, lim).map(w => shiftCard(w, true)).join('') + (lim < all.length ? `<button class="btn alt" onclick="wAll=1;render()">Показать все сессии (${all.length})</button>` : ''); }
+  if (!D.rows.length && !D.ws.length) h += '<div class="card hint center">За этот период работы не было</div>';
+  h += `<div class="hint" style="margin-top:12px">Заработано = часы в задачах × ставка проекта. У незакрытых проектов ставка предварительная — снижается, пока добавляются часы.</div>`;
+  return h + '</div>';
+}
+setInterval(() => {
+  if (!S) return;
+  const dur = sessWork(), work = sum(shiftEs(S.w.id));
+  const p = $('#wpct'); if (p) p.textContent = pct(work, dur) + '%';
+}, 1000);
+
+// ---- выпадающие подсказки для тегов: касание / мышь / стрелки ↓↑ + Enter, Esc — закрыть
+let acBox = null, acIdx = -1, acInp = null;
+function acClose() { if (acBox) acBox.remove(); acBox = null; acIdx = -1; acInp = null; }
+function acOpen(inp) {
+  const q = inp.value.trim().toLowerCase();
+  const list = catValues(inp.dataset.ac).filter(v => v.toLowerCase() !== q && (!q || v.toLowerCase().includes(q))).slice(0, 8);
+  acClose(); if (!list.length) return;
+  acInp = inp; acBox = document.createElement('div'); acBox.className = 'acbox'; acBox._vals = list;
+  acBox.innerHTML = list.map((v, i) => { const k = q ? v.toLowerCase().indexOf(q) : -1; return `<div class="aci" data-i="${i}">${k < 0 ? esc(v) : esc(v.slice(0, k)) + '<b>' + esc(v.slice(k, k + q.length)) + '</b>' + esc(v.slice(k + q.length))}</div>`; }).join('');
+  // pointerdown/mousedown — не отдаём фокус полю; выбор — по click, чтобы касание не «провалилось» на кнопку под списком
+  ['pointerdown', 'mousedown'].forEach(ev => acBox.addEventListener(ev, e => e.preventDefault()));
+  acBox.addEventListener('click', e => { const it = e.target.closest('.aci'); if (!it) return; e.preventDefault(); e.stopPropagation(); acPick(+it.dataset.i); });
+  document.body.appendChild(acBox); acPlace();
+}
+function acPlace() {
+  if (!acBox || !acInp) return;
+  const r = (acInp.closest('.tf') || acInp).getBoundingClientRect(), vh = (window.visualViewport && visualViewport.height) || innerHeight;
+  const below = vh - r.bottom, h = Math.min(acBox.scrollHeight, 220);
+  Object.assign(acBox.style, { left: r.left + 'px', width: r.width + 'px', top: (below >= h + 8 || below > r.top ? r.bottom + 4 : r.top - h - 4) + 'px' });
+}
+function acPick(i) { const inp = acInp, v = acBox && acBox._vals[i]; if (!inp || v == null) return; inp.value = v; acClose(); inp.dispatchEvent(new Event('change', { bubbles: true })); }
+function acHi(i) { const items = acBox.querySelectorAll('.aci'); acIdx = (i + items.length) % items.length; items.forEach((x, j) => x.classList.toggle('on', j === acIdx)); items[acIdx].scrollIntoView({ block: 'nearest' }); }
+document.addEventListener('input', e => { if (e.target.matches && e.target.matches('input[data-ac]')) acOpen(e.target); });
+document.addEventListener('focusin', e => { if (e.target.matches && e.target.matches('input[data-ac]')) acOpen(e.target); });
+document.addEventListener('focusout', e => { if (e.target === acInp) setTimeout(() => { if (document.activeElement !== acInp) acClose(); }, 150); });
+document.addEventListener('keydown', e => {
+  if (!acBox || e.target !== acInp) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); acHi(acIdx + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); acHi(acIdx - 1); }
+  else if (e.key === 'Enter' && acIdx >= 0) { e.preventDefault(); e.stopPropagation(); acPick(acIdx); }
+  else if (e.key === 'Escape') acClose();
+}, true);
+window.addEventListener('resize', acPlace); if (window.visualViewport) visualViewport.addEventListener('resize', acPlace);
+document.addEventListener('scroll', e => { if (e.target !== acBox) acPlace(); }, true);
+function render() {
+  acClose();
+  ['home', 'todo', 'proj', 'stat'].forEach(t => $('#n-' + t).classList.toggle('on', t === tab));
+  const p = cur && proj(cur);
+  $('#app').innerHTML = settings ? viewSettings() : gearBtn() + (tab === 'home' ? viewHome() : tab === 'todo' ? viewTodo() : tab === 'stat' ? viewStats() : p ? viewProject(p) : viewProjects());
+  const key = settings ? 'settings' : tab + (p ? p.id : ''); if (key !== render.k) { $('#app').scrollTop = 0; render.k = key; }
+  if (V('6.1')) { if (p || settings) tg.BackButton.show(); else tg.BackButton.hide(); }
+  const pg = $('#pager'); if (pg) { fitPager(); document.querySelectorAll('#app details').forEach(d => d.addEventListener('toggle', fitPager)); }
+  const on = $('.ftab.on'), bar = $('.ftabs'); if (on && bar) bar.scrollLeft = on.offsetLeft - bar.clientWidth / 2 + on.clientWidth / 2;
+  const ri = $('#ren'); if (ri) { ri.focus(); ri.select(); }
+}
+if (V('6.1')) tg.BackButton.onClick(() => { if (settings) settings = false; else { cur = null; ren = null; } render(); });
+
+setInterval(() => {
+  if (!S) return;
+  const w = $('#wclock'); if (w) w.textContent = fd(sessWork());
+  const bc = $('#bclock'); if (bc && S.br) bc.textContent = fd(now() - S.br);
+  const wb = $('#wbrk'); if (wb) { const bs = sessBreaks(); wb.textContent = bs ? fh(bs) : ''; }
+  const k = $('#wwork'); if (k) k.textContent = fh(sum(shiftEs(S.w.id)));
+  const t = $('#tclock'); if (t && S.t) t.textContent = fd(taskSec(S.t));
+}, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !ren && !document.activeElement.matches('input,textarea')) render(); });
+
+// запрет масштабирования: щипок (iOS), Ctrl+колесо (двойной тап отключён через touch-action в CSS) / Ctrl+± на компьютере
+['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].includes(e.key)) e.preventDefault(); });
+function showErr(m) {
+  const d = document.createElement('div'); d.className = 'errbar'; d.textContent = 'Ошибка: ' + m;
+  d.onclick = () => d.remove(); document.body.appendChild(d); setTimeout(() => d.remove(), 8000);
+}
+window.addEventListener('error', e => showErr(e.message || 'неизвестная'));
+window.addEventListener('unhandledrejection', e => showErr((e.reason && e.reason.message) || String(e.reason)));
+initSwipe();
+load().then(async () => { if (opt.full !== false) setFull(true); try { if (mobile && V('8.0')) tg.lockOrientation(); } catch {} render(); autoBackup(); }).catch(e => { $('#app').innerHTML = '<div class="card">Не удалось загрузить данные: ' + esc((e && e.message) || e) + '</div>'; });
+</script>
+</body>
+</html>

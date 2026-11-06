@@ -1420,12 +1420,6 @@ function appCard() {
   let h = '';
   if (canFull) h += `<div class="row" style="margin-top:8px"><span>Во весь экран<div class="hint">Скрывает шапку Telegram</div></span>
     <label class="tgl"><input type="checkbox" ${opt.full === false ? '' : 'checked'} onchange="opt.full=this.checked;saveO();setFull(this.checked);render()" aria-label="Во весь экран"><i></i></label></div>`;
-  if (me && lsGet('st-multi-acc')) { // показываем, только когда на этом устройстве уже открывали другой аккаунт
-    const on = mainAcc && mainAcc !== 'off';
-    h += `<div class="row" style="${canFull ? 'border-top:1px solid var(--line);margin-top:6px;' : 'margin-top:8px;'}padding-top:12px"><span>Проверка аккаунта<div class="hint">${on ? 'Основной на этом устройстве: ' + esc(mainAcc.n) + '. Если открыть приложение из другого аккаунта — предупредит.' : 'Выключена'}</div></span>
-      <label class="tgl"><input type="checkbox" ${on ? 'checked' : ''} onchange="setMainAcc(this.checked?null:'off')" aria-label="Проверка аккаунта"><i></i></label></div>` +
-      (on && mainAcc.id !== me.id ? `<button class="btn alt" style="margin-top:10px" onclick="setMainAcc()">Сделать основным ${esc(accName(me))}</button>` : '');
-  }
   return h ? `<div class="card"><div class="lbl">Приложение</div>${h}</div>` : '';
 }
 function viewSettings() {
@@ -1645,28 +1639,8 @@ document.addEventListener('keydown', e => {
 }, true);
 window.addEventListener('resize', acPlace); if (window.visualViewport) visualViewport.addEventListener('resize', acPlace);
 document.addEventListener('scroll', e => { if (e.target !== acBox) acPlace(); }, true);
-/* ===== Основной аккаунт на этом устройстве (если у человека несколько аккаунтов Telegram) ===== */
-const me = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
-const accName = u => u ? (u.username ? '@' + u.username : [u.first_name, u.last_name].filter(Boolean).join(' ') || 'id ' + u.id) : '';
-const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
-const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
-const accOf = u => ({ id: u.id, n: accName(u) });
-let mainAcc = lsGet('st-main-acc'), accWarn = null;
-if (me) { if (!mainAcc) { mainAcc = accOf(me); lsSet('st-main-acc', mainAcc); } else if (mainAcc !== 'off' && mainAcc.id !== me.id) { accWarn = mainAcc; lsSet('st-multi-acc', 1); } else if (mainAcc !== 'off' && mainAcc.n !== accName(me)) { mainAcc = accOf(me); lsSet('st-main-acc', mainAcc); } }
-function setMainAcc(v) { mainAcc = v === 'off' ? 'off' : me ? accOf(me) : null; lsSet('st-main-acc', mainAcc); accWarn = null; render(); }
-function accScreen() {
-  return `<div style="min-height:80vh;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:20px 4px">
-    <div style="font-size:52px;margin-bottom:10px">👤</div>
-    <h2 style="margin:0 0 10px">Это не основной аккаунт</h2>
-    <div class="hint" style="font-size:15px;line-height:1.5">Приложение открыто через <b style="color:var(--tx)">${esc(accName(me))}</b>.<br>Твои данные — в аккаунте <b style="color:var(--acc)">${esc(accWarn.n)}</b>.<br><br>Переключись на него в Telegram и открой приложение снова.</div>
-    <div style="margin-top:26px"><button class="btn" onclick="tg.close()">Закрыть</button>
-    <button class="btn alt" onclick="accWarn=null;render()">Продолжить в этом аккаунте</button>
-    <button class="link" style="margin-top:14px" onclick="setMainAcc()">Сделать этот аккаунт основным</button></div></div>`;
-}
 function render() {
   acClose();
-  const nav = document.querySelector('nav'); if (nav) nav.style.display = accWarn ? 'none' : '';
-  if (accWarn) { $('#app').innerHTML = accScreen(); return; }
   ['home', 'todo', 'proj', 'stat'].forEach(t => $('#n-' + t).classList.toggle('on', t === tab)); placePill();
   const p = cur && proj(cur);
   $('#app').innerHTML = settings ? viewSettings() : gearBtn() + (tab === 'home' ? viewHome() : tab === 'todo' ? viewTodo() : tab === 'stat' ? viewStats() : p ? viewProject(p) : viewProjects());

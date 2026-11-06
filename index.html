@@ -26,6 +26,9 @@ h3{margin:0 0 10px;font-size:15px;font-weight:600}
 .line+.line{border-top:1px solid var(--line)}
 .line>span:last-child{white-space:nowrap}
 select{width:100%;padding:12px 14px;border-radius:12px;border:0;background:var(--s2);color:var(--tx);font:inherit;margin:4px 0 8px}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;display:block;min-height:46px;text-align:left}
+input::-webkit-date-and-time-value{text-align:left}
+.inl>*{min-width:0}
 input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid transparent;background:var(--s2);color:var(--tx);font:inherit;margin:4px 0 8px}
 input:focus,textarea:focus{outline:none;border-color:rgba(74,140,255,.5)}
 input::placeholder{color:var(--dim)}
@@ -64,15 +67,15 @@ textarea{font:12px/1.5 var(--mono);min-height:260px;color:var(--mut)}
 @keyframes pulse{50%{opacity:.25}}
 .item{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:var(--s2);color:var(--tx);font:inherit;padding:13px 14px;border-radius:14px;margin:6px 0}
 .pcard{display:block;width:100%;text-align:left;color:var(--tx);font:inherit;cursor:pointer}
-.badge{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--s2);color:var(--mut);font-weight:500;vertical-align:middle}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--s2);color:var(--mut);white-space:nowrap;vertical-align:middle}
 .badge.wait{background:rgba(255,182,72,.12);color:var(--amb);white-space:nowrap}
-.badge.done{background:rgba(74,140,255,.12);color:var(--acc)}
+.badge.done{background:var(--s2);color:var(--mut)}
 .big{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .grid .card{margin:0}
 .kpi .v{font-family:var(--mono);font-size:21px;font-weight:600;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
 .seg{display:flex;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:4px;margin:16px 0 10px}
-.seg button{flex:1;border:0;background:none;color:var(--mut);font:inherit;padding:8px;border-radius:10px}
+.seg button{flex:1;white-space:nowrap;border:0;background:none;color:var(--mut);font:inherit;padding:8px;border-radius:10px}
 .seg button.on{background:var(--s2);color:var(--tx)}
 .per{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .per b{font-weight:600;text-transform:capitalize}
@@ -121,7 +124,7 @@ details.sw summary{text-align:center;padding:8px}
 .tf input{margin:0;border:0;background:none;padding-left:4px}
 .tf input:focus{border:0}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
-.tag{display:inline-flex;align-items:center;gap:2px;font-size:12px;padding:3px 9px;border-radius:20px;background:var(--s2);color:var(--mut);white-space:nowrap}
+.tag{display:inline-flex;align-items:center;gap:2px;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--s2);color:var(--mut);white-space:nowrap}
 .cpk{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .cpk button{width:30px;height:30px;border-radius:50%;border:0;padding:0;box-shadow:0 0 0 2px var(--s1)}
 .cpk button.on{box-shadow:0 0 0 2px var(--s1),0 0 0 4px var(--tx)}
@@ -131,11 +134,15 @@ details.cdet summary::after{content:'›';color:var(--dim);font-size:20px;line-h
 details.cdet[open] summary::after{transform:rotate(90deg)}
 details.cdet summary .dot{margin:0 10px 0 auto}
 .trow{position:relative;margin:6px 0;border-radius:14px;overflow:hidden;touch-action:pan-y}
-.tsw{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:600;font-size:14px;opacity:0;background:var(--s2);border-radius:14px}
-.trow.sw-on .tsw{opacity:1}.tsw .l{color:var(--acc)}.tsw .r{color:var(--amb)}
 .tfg{position:relative;display:flex;align-items:center;gap:10px;padding:11px 10px 11px 12px;background:var(--s1);border:1px solid var(--line);border-radius:14px;transition:transform .22s ease}
-.trow.ed .tsw{display:none}
 .trow.ed .tfg{border-radius:14px 14px 0 0;border-bottom:0}
+.trow.flat{margin:0;border-radius:0;overflow:visible}
+.trow.flat+.trow.flat{border-top:1px solid var(--line)}
+.trow.flat .tfg{background:var(--s1);border:0;border-radius:0;padding:11px 0}
+.trow.flat .ted{background:none;border:0;padding:0 0 10px}
+.trow.flat.ed .tfg{border:0}
+.chk:disabled{opacity:.4}
+.hact{border:0;background:none;color:var(--acc);font:inherit;font-size:13px;padding:0;margin:0}
 .chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--dim);background:none;flex:none;padding:0;color:#fff;font-size:13px;line-height:20px}
 .chk.on{background:var(--acc);border-color:var(--acc)}
 .tmain{flex:1;min-width:0;cursor:pointer}.ttl{word-break:break-word}.trow.dn .ttl{color:var(--mut);text-decoration:line-through}
@@ -148,6 +155,16 @@ details.cdet summary .dot{margin:0 10px 0 auto}
 .chips button{border:1px solid var(--line);background:var(--s2);color:var(--tx);font:inherit;font-size:13px;padding:7px 11px;border-radius:10px}
 .chips button.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
 .tgrp{margin:18px 0 2px 4px;display:flex;justify-content:space-between}
+.note{white-space:pre-wrap;color:var(--mut);font-size:14px;margin:-2px 0 10px;cursor:pointer}
+textarea.note-ed{font-family:inherit;font-size:14px;line-height:1.45;color:var(--tx);min-height:90px;margin:0 0 10px}
+#undo{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px 12px 16px;border-radius:14px;background:#26262d;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.5);transform:translateY(140%);opacity:0;transition:transform .25s ease,opacity .25s ease;pointer-events:none}
+#undo.on{transform:none;opacity:1;pointer-events:auto}
+#undo .uw{display:flex;align-items:center;gap:12px}
+.uring{width:20px;height:20px;flex:none;transform:rotate(-90deg)}
+.uring circle{fill:none;stroke:rgba(255,255,255,.14);stroke-width:2.4}
+.uring circle.u{stroke:var(--acc);stroke-linecap:round;stroke-dasharray:50.27;stroke-dashoffset:0;animation:uring 5s linear forwards}
+@keyframes uring{to{stroke-dashoffset:50.27}}
+#undo button{border:0;background:none;color:var(--acc);font:inherit;font-weight:600;padding:4px 2px}
 .cdot{width:18px;height:18px;border-radius:50%;border:0;padding:0;vertical-align:-3px;margin-right:8px}
 .tag button{border:0;background:none;color:inherit;opacity:.7;font-size:11px;padding:0 0 0 4px}
 .lg{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
@@ -175,7 +192,15 @@ a.back{color:var(--mut);text-decoration:none;display:inline-block;margin-top:16p
 nav{position:absolute;left:0;right:0;bottom:0;height:calc(64px + var(--bot));align-items:flex-start;display:flex;background:rgba(10,10,12,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px 8px calc(8px + var(--bot));z-index:10}
 nav button{flex:1;border:0;background:none;color:var(--dim);font:inherit;font-size:11px;letter-spacing:.04em;padding:4px 0}
 nav svg{display:block;margin:0 auto 4px;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-nav button.on{color:var(--acc)}
+nav button.on,nav button.hov{color:var(--acc)}
+nav button{position:relative;z-index:1;transition:color .25s}
+#pill{position:absolute;left:0;border-radius:20px;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.13);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.35);
+  -webkit-backdrop-filter:blur(14px) saturate(170%);backdrop-filter:blur(14px) saturate(170%);
+  transition:transform .5s cubic-bezier(.3,1.35,.45,1),width .3s,height .3s}
+#pill.drag{transition:transform .08s linear;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.06));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 10px 28px rgba(0,0,0,.45)}
 </style>
 </head>
 <body>
@@ -294,7 +319,7 @@ async function load() {
     if (k === 'B') { lastBk = +d || 0; continue; }
     if (k === 'O') { opt = Object.assign(opt, d); continue; }
     cache[k] = s;
-    if (k.startsWith('P-')) d.forEach(r => P.push({ id: r[0], n: r[1], pr: r[2], c: r[3], cr: r[4], h: r[5] || [], f: r[6] || '', u: r[7] ? 1 : 0, g: Array.isArray(r[8]) ? r[8] : [], t: r[9] && typeof r[9] === 'object' ? r[9] : {}, pp: +r[10] || 0, wt: +r[11] || 0, cl: r[12] ?? -1, part: r.length > 13 ? (r[13] ? 1 : 0) : (+r[10] > 0 && +r[10] < +r[2] ? 1 : 0) }));
+    if (k.startsWith('P-')) d.forEach(r => P.push({ id: r[0], n: r[1], pr: r[2], c: r[3], cr: r[4], h: r[5] || [], f: r[6] || '', u: r[7] ? 1 : 0, g: Array.isArray(r[8]) ? r[8] : [], t: r[9] && typeof r[9] === 'object' ? r[9] : {}, pp: +r[10] || 0, wt: +r[11] || 0, nt: r[14] || '', cl: r[12] ?? -1, part: r.length > 13 ? (r[13] ? 1 : 0) : (+r[10] > 0 && +r[10] < +r[2] ? 1 : 0) }));
     else if (k.startsWith('F-')) d.forEach(r => F.push({ id: r[0], n: r[1], cr: r[2], cl: r[3] ?? -1 }));
     else if (k.startsWith('T-')) d.forEach(r => T.push({ id: r[0], p: r[1] || '', n: r[2], d: r[3], dd: r[4] || '', st: r[5] ? 1 : 0, o: typeof r[6] === 'number' ? r[6] : null }));
     else if (k.startsWith('w-')) d.forEach(r => W.push({ id: r[0], a: r[1], b: r[2], k: r[3] || [] }));
@@ -324,7 +349,7 @@ async function saveChunks(prefix, rows) {
 }
 let queue = Promise.resolve();
 const persist = fn => { queue = queue.then(fn).catch(e => toast('Ошибка сохранения: ' + ((e && e.message) || e))); };
-const saveP = () => persist(() => saveChunks('P-', P.map(p => [p.id, p.n, p.pr, p.c, p.cr, p.h, p.f || '', p.u ? 1 : 0, p.g || [], p.t || {}, p.pp || 0, p.wt || 0, p.cl ?? -1, p.part ? 1 : 0])));
+const saveP = () => persist(() => saveChunks('P-', P.map(p => [p.id, p.n, p.pr, p.c, p.cr, p.h, p.f || '', p.u ? 1 : 0, p.g || [], p.t || {}, p.pp || 0, p.wt || 0, p.cl ?? -1, p.part ? 1 : 0, p.nt || ''])));
 // настройки по умолчанию: вкладки «Все» и «Завершённые» видны, режим «В ожидании» включён, полный экран
 const DEF_OPT = () => ({ hideAll: false, hideDone: false, noWait: false, full: true, folderCol: true, plainTags: true });
 let opt = DEF_OPT();
@@ -409,6 +434,43 @@ function moveTask(id, dir) {
   [list[i].o, list[j].o] = [list[j].o, list[i].o]; T.sort((x, y) => x.o - y.o); saveT(); render();
 }
 let ordP = null; // проект, в котором включён режим «порядок»
+/* ===== Отмена удаления ===== */
+let undoSnap = null, undoTimer = null;
+const snapState = () => ({ P: JSON.stringify(P), T: JSON.stringify(T), E: JSON.stringify(E), W: JSON.stringify(W), F: JSON.stringify(F), tc: JSON.stringify(opt.tc || []) });
+function undoBar(msg) {
+  let el = $('#undo'); if (!el) { el = document.createElement('div'); el.id = 'undo'; document.body.appendChild(el); undoSwipe(el); }
+  el.style.transform = ''; el.style.transition = '';
+  el.innerHTML = `<span class="uw"><svg class="uring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8"/><circle class="u" cx="10" cy="10" r="8"/></svg>${esc(msg)}</span><button onclick="doUndo()">Вернуть</button>`;
+  el.classList.add('on');
+  clearTimeout(undoTimer); undoTimer = setTimeout(undoHide, 5000);
+}
+function undoHide() { const el = $('#undo'); clearTimeout(undoTimer); undoSnap = null; if (el) { el.style.transform = ''; el.style.transition = ''; el.classList.remove('on'); } }
+// свайп вниз — скрыть полоску (вернуть удалённое уже нельзя)
+function undoSwipe(el) {
+  let y0 = null, dy = 0;
+  el.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; el.style.transition = 'none'; }, { passive: true });
+  el.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); el.style.transform = `translateY(${dy}px)`; el.style.opacity = String(Math.max(.2, 1 - dy / 120)); }, { passive: true });
+  el.addEventListener('touchend', () => { if (y0 === null) return; y0 = null; el.style.transition = ''; el.style.opacity = '';
+    if (dy > 40) { el.style.transform = 'translateY(140%)'; setTimeout(undoHide, 200); } else el.style.transform = ''; });
+}
+function doUndo() {
+  const s0 = undoSnap; if (!s0) return; const cur0 = snapState();
+  const months = (arr, key) => { const m = {}; JSON.parse(arr).forEach(x => { const k = ymOf(x.a); (m[k] = m[k] || []).push(x); }); return m; };
+  const diffMonths = (a, b) => { const ma = months(a), mb = months(b); return [...new Set([...Object.keys(ma), ...Object.keys(mb)])].filter(k => JSON.stringify(ma[k] || []) !== JSON.stringify(mb[k] || [])); };
+  const em = diffMonths(s0.E, cur0.E), wm = diffMonths(s0.W, cur0.W);
+  P = JSON.parse(s0.P); T = JSON.parse(s0.T); E = JSON.parse(s0.E); W = JSON.parse(s0.W); F = JSON.parse(s0.F); opt.tc = JSON.parse(s0.tc);
+  if (s0.P !== cur0.P) saveP(); if (s0.T !== cur0.T) saveT(); if (s0.F !== cur0.F) saveF(); if (s0.tc !== cur0.tc) saveO();
+  em.forEach(saveM); wm.forEach(saveW);
+  undoSnap = null; clearTimeout(undoTimer); const el = $('#undo'); if (el) el.classList.remove('on'); render();
+}
+// оборачиваем все удаления: после удаления 5 секунд можно вернуть
+const UNDO_LBL = { delTask: 'Задача удалена', delProject: 'Проект удалён', delEntry: 'Время удалено', delShift: 'Сессия удалена', delFolder: 'Папка удалена', delCat: 'Категория удалена', delPay: 'Доплата удалена', delBreak: 'Перерыв удалён', delTag: 'Тег удалён' };
+setTimeout(() => Object.keys(UNDO_LBL).forEach(n => {
+  const f = window[n]; if (typeof f !== 'function' || f.__u) return;
+  const w = async (...a) => { const s0 = snapState(); await f(...a); const s1 = snapState(); if (Object.keys(s0).some(k => s0[k] !== s1[k])) { undoSnap = s0; undoBar(UNDO_LBL[n]); } };
+  w.__u = true; window[n] = w;
+}));
+
 /* ===== Задачи (таск-менеджер): дела без проекта + задачи всех проектов ===== */
 let tEdit = null, tfMode = 'all';
 const isoOf = t => new Date(t * 1000).toLocaleDateString('sv');
@@ -432,26 +494,43 @@ function todoRank(t) {
 }
 const pOrd = t => { const p = proj(t.p); return p ? -p.cr : -Infinity; }; // при равном номере: дела без проекта, затем свежие проекты
 const todoSort = (a, b) => (b.st || 0) - (a.st || 0) || (a.dd || '9').localeCompare(b.dd || '9') || todoRank(a) - todoRank(b) || pOrd(a) - pOrd(b) || a.o - b.o;
+// Единая строка задачи — одна и та же во «Задачах», «На сегодня», в проекте, при выборе задачи и в сессии.
+// ctx: todo | proj | pick | sess — от него зависит только серая строка под названием
 function todoRow(t, opts = {}) {
-  const p = proj(t.p), ed = tEdit === t.id && !opts.mini, run = S && S.t === t.id;
-  let h = `<div class="trow ${t.d ? 'dn' : ''} ${ed ? 'ed' : ''}" data-id="${t.id}"><div class="tsw"><span class="l">✓ Готово</span><span class="r">Завтра →</span></div>
-    <div class="tfg"><button class="chk ${t.d ? 'on' : ''}" onclick="todoDone('${t.id}')" aria-label="Готово">${t.d ? '✓' : ''}</button>
-    <div class="tmain" onclick="tEdit=tEdit==='${t.id}'?null:'${t.id}';${opts.mini ? "tab='todo';" : ''}render()"><div class="ttl">${esc(t.n)}</div>
-      ${p || t.dd ? `<div class="tmeta">${p ? `<span>${dot(colorOf(p.id))}${esc(p.n)}</span>` : ''}${t.dd && !t.d ? dueChip(t.dd) : ''}</div>` : ''}
-      ${p && projTags(p).length ? `<div class="tags" style="margin-top:5px">${projTags(p).map(x => `<span class="tag" ${tagStyle(x.col)}>${esc(tagLabel(x))}</span>`).join('')}</div>` : ''}</div>
-    ${t.d ? '' : `<button class="star ${t.st ? 'on' : ''}" onclick="todoStar('${t.id}')" aria-label="Важное">${t.st ? '★' : '☆'}</button>
-    <button class="ib play" style="margin-left:2px" onclick="go('${t.id}')">${run ? '●' : '▶'}</button>`}</div>`;
-  if (ed) {
-    const k = t.dd ? dayDiff(t.dd) : null;
-    h += `<div class="ted"><input value="${esc(t.n)}" maxlength="100" onchange="todoRename('${t.id}',this.value)" style="margin-top:8px">
-      <div class="lbl" style="margin:6px 0 0 2px">Срок</div>
-      <div class="chips"><button class="${k === 0 ? 'on' : ''}" onclick="todoDue('${t.id}',isoAdd(0))">Сегодня</button><button class="${k === 1 ? 'on' : ''}" onclick="todoDue('${t.id}',isoAdd(1))">Завтра</button><button onclick="todoDue('${t.id}',isoAdd(7))">Через неделю</button>${t.dd ? `<button onclick="todoDue('${t.id}','')">Без срока</button>` : ''}</div>
-      <input type="date" value="${t.dd || ''}" onchange="todoDue('${t.id}',this.value)">
-      ${p ? `<button class="btn alt" onclick="cur='${p.id}';tab='proj';tEdit=null;render()">Открыть проект «${esc(p.n)}»</button>`
-        : P.some(x => !x.c) ? `<div class="lbl" style="margin:6px 0 0 2px">Перенести в проект</div><select onchange="todoMove('${t.id}',this.value)"><option value="">— выбери проект —</option>${P.filter(x => !x.c).sort((a, b) => b.cr - a.cr).map(x => `<option value="${x.id}">${esc(x.n)}${folder(x.f) ? ' · ' + esc(folder(x.f).n) : ''}</option>`).join('')}</select>` : ''}
-      <button class="btn del" onclick="delTask('${t.id}')">Удалить задачу</button></div>`;
-  }
+  const ctx = opts.ctx || 'todo', p = proj(t.p), ed = tEdit === t.id, run = S && S.t === t.id, locked = p && p.c;
+  const meta = [];
+  if (ctx === 'todo' && p) meta.push(`<span>${dot(colorOf(p.id))}${esc(p.n)}</span>`);
+  if (ctx === 'proj' || ctx === 'pick') { const sec = taskSec(t.id); if (sec) meta.push(`<span class="num">${fh(sec)}</span>`); }
+  if (ctx === 'sess') meta.push(`<span class="num">в этой сессии ${fh(opts.sec || 0)}</span>`);
+  if (t.dd && !t.d) meta.push(dueChip(t.dd));
+  const tags = ctx === 'todo' && p && projTags(p).length ? `<div class="tags" style="margin-top:5px">${projTags(p).map(x => `<span class="tag" ${tagStyle(x.col)}>${esc(tagLabel(x))}</span>`).join('')}</div>` : '';
+  const right = opts.ord ? `<button class="ib" onclick="moveTask('${t.id}',-1)" aria-label="Выше">↑</button><button class="ib" onclick="moveTask('${t.id}',1)" aria-label="Ниже">↓</button>`
+    : (t.d ? '' : (ctx === 'todo' || ctx === 'proj' ? `<button class="star ${t.st ? 'on' : ''}" onclick="todoStar('${t.id}')" aria-label="Важное">${t.st ? '★' : '☆'}</button>` : '') +
+      (locked ? '' : `<button class="ib play" style="margin-left:2px" onclick="go('${t.id}')">${run ? '●' : '▶'}</button>`));
+  let h = `<div class="trow ${opts.flat ? 'flat' : ''} ${t.d ? 'dn' : ''} ${ed ? 'ed' : ''}" data-id="${t.id}">
+    <div class="tfg"><button class="chk ${t.d ? 'on' : ''}" ${locked ? 'disabled' : `onclick="todoDone('${t.id}')"`} aria-label="Готово">${t.d ? '✓' : ''}</button>
+    <div class="tmain" onclick="tEdit=tEdit==='${t.id}'?null:'${t.id}';editE=null;render()"><div class="ttl">${esc(t.n)}</div>
+      ${meta.length ? `<div class="tmeta">${meta.join('')}</div>` : ''}${tags}</div>${right}</div>`;
+  if (ed) h += taskEditor(t, ctx);
   return h + '</div>';
+}
+function taskEditor(t, ctx) {
+  const p = proj(t.p), k = t.dd ? dayDiff(t.dd) : null, es = E.filter(e => e.t === t.id).sort((a, b) => b.a - a.a);
+  const others = P.filter(x => !x.c && x.id !== t.p).sort((a, b) => b.cr - a.cr);
+  return `<div class="ted"><input value="${esc(t.n)}" maxlength="100" onchange="todoRename('${t.id}',this.value)" style="margin-top:8px">
+    ${t.d ? '' : `<div class="chips"><button class="${k === 0 ? 'on' : ''}" onclick="todoDue('${t.id}',isoAdd(0))">Сегодня</button><button class="${k === 1 ? 'on' : ''}" onclick="todoDue('${t.id}',isoAdd(1))">Завтра</button><button onclick="todoDue('${t.id}',isoAdd(7))">Через неделю</button>${t.dd ? `<button onclick="todoDue('${t.id}','')">Без срока</button>` : ''}<button class="${t.st ? 'on' : ''}" onclick="todoStar('${t.id}')">★ Важное</button></div>
+    <input type="date" value="${t.dd || ''}" onchange="todoDue('${t.id}',this.value)">`}
+    <div class="lbl" style="margin:8px 0 2px 2px">Время по задаче · ${fh(taskSec(t.id))}</div>
+    ${es.map(e => editE === e.id ? `<div class="card" style="margin:6px 0;padding:12px;background:var(--s2)"><div class="hint" style="margin-bottom:4px">${e.w ? 'Отрезок из сессии ' + fdate(e.a) + ' ' + ftime(e.a) : 'Время, добавленное вручную'}</div>
+        <div class="inl"><input id="ed-${e.id}" type="date" value="${new Date(e.a * 1000).toLocaleDateString('sv')}" style="background:var(--s1)"><input id="em-${e.id}" ${hmAttrs} value="${hm(e.b - e.a)}" class="num" style="max-width:90px;background:var(--s1)"></div>
+        <div class="two"><button class="btn alt" style="background:var(--s1)" onclick="editE=null;render()">Отмена</button><button class="btn" onclick="saveEntry('${e.id}')">Сохранить</button></div>
+        <button class="btn del" onclick="delEntryE('${e.id}')">Удалить это время</button></div>`
+      : `<div class="line" onclick="editE='${e.id}';render()" style="cursor:pointer"><span class="hint num">${fdate(e.a)} ${e.w ? ftime(e.a) + '–' + ftime(e.b) : '· вручную'}</span><span class="num">${fh(e.b - e.a)}</span></div>`).join('') || '<div class="hint" style="padding:6px 2px">Пока нет</div>'}
+    <div class="inl"><input id="md-${t.id}" type="date" value="${new Date().toLocaleDateString('sv')}"><input id="mm-${t.id}" ${hmAttrs} placeholder="чч:мм" class="num" style="max-width:90px"><button class="btn sm alt" onclick="addManual('${t.id}')">+</button></div>
+    ${others.length || t.p ? `<div class="lbl" style="margin:8px 0 0 2px">Перенести</div><select onchange="todoMove('${t.id}',this.value)"><option value="">— ${p ? 'в другой проект' : 'в проект'} —</option>${t.p ? '<option value="-">Без проекта</option>' : ''}${others.map(x => `<option value="${x.id}">${esc(x.n)}${folder(x.f) ? ' · ' + esc(folder(x.f).n) : ''}</option>`).join('')}</select>` : ''}
+    ${p && ctx !== 'proj' ? `<button class="btn alt" onclick="cur='${p.id}';tab='proj';settings=false;tEdit=null;render()">Открыть проект «${esc(p.n)}»</button>` : ''}
+    <button class="btn del" onclick="delTask('${t.id}')">Удалить задачу</button>
+    <button class="btn alt" onclick="tEdit=null;editE=null;render()">Свернуть</button></div>`;
 }
 function todoGroups(list) {
   const g = { over: [], today: [], tom: [], later: [], none: [] };
@@ -463,20 +542,21 @@ function viewTodo() {
   const open = all.filter(t => !t.d), g = todoGroups(open);
   let h = `<h2>Задачи</h2>
     <div class="inl"><input id="nt-todo" placeholder="Новое дело" maxlength="100" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newTodo(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newTodo()">+</button></div>
-    <div class="seg" style="margin-top:6px">${[['all', 'Все'], ['own', 'Без проекта'], ['proj', 'Из проектов']].map(([m, n]) => `<button class="${tfMode === m ? 'on' : ''}" onclick="tfMode='${m}';tEdit=null;render()">${n}</button>`).join('')}</div>`;
+    <div class="ftabs" style="margin-top:6px">${[['all', 'Все'], ['own', 'Без проекта'], ['proj', 'Из проектов']].map(([m, n]) => `<button class="ftab ${tfMode === m ? 'on' : ''}" onclick="tfMode='${m}';tEdit=null;render()">${n}<span>${T.filter(t => !t.d && todoVisible(t) && (m === 'all' || (m === 'own' ? t.p === '' : t.p !== ''))).length}</span></button>`).join('')}</div>`;
+  h += '<div id="swp">';
   const sec = (key, title, color) => g[key].length ? `<div class="tgrp"><span class="lbl" ${color ? `style="color:${color}"` : ''}>${title}</span><span class="hint num">${g[key].length}</span></div>` + g[key].map(t => todoRow(t)).join('') : '';
   h += sec('over', 'Просрочено', 'var(--red)') + sec('today', 'Сегодня', 'var(--acc)') + sec('tom', 'Завтра') + sec('later', 'Скоро') + sec('none', 'Без срока');
   if (!open.length) h += `<div class="hint center" style="padding:30px 0 10px">${all.length ? 'Всё сделано 🎉' : 'Задач пока нет.<br>Впиши дело в поле сверху.'}</div>`;
   const done = all.filter(t => t.d && t.d > now() - 14 * 86400).sort((a, b) => b.d - a.d);
   if (done.length) h += `<details class="sw" style="margin-top:14px"><summary>Выполнено за 2 недели (${done.length})</summary>${done.map(t => todoRow(t)).join('')}</details>`;
-  if (open.length) h += `<div class="hint center" style="margin:14px 0 4px">Свайп вправо — готово, влево — на завтра</div>`;
+  h += '</div>';
   return h;
 }
 function todayCard() {
   const list = T.filter(t => !t.d && t.dd && dayDiff(t.dd) <= 0 && todoVisible(t)).sort((a, b) => todoSort(a, b));
   const done = T.filter(t => t.d && t.d >= dayStart(now()) && todoVisible(t) && (t.dd || t.p === '')).sort((a, b) => b.d - a.d);
   if (!list.length && !done.length) return '';
-  return `<div class="row" style="margin:22px 4px 4px"><span class="lbl">На сегодня</span><button class="link" style="margin:0;padding:0" onclick="tab='todo';render()">все задачи ›</button></div>` +
+  return `<div class="row" style="margin:22px 4px 4px"><span class="lbl">На сегодня</span><button class="hact" onclick="tab='todo';render()">все задачи ›</button></div>` +
     list.slice(0, 6).map(t => todoRow(t)).join('') + (list.length > 6 ? `<div class="hint center" style="margin:6px 0">и ещё ${list.length - 6}</div>` : '') +
     (!list.length ? '<div class="hint center" style="padding:10px 0">На сегодня всё сделано 🎉</div>' : '') +
     (done.length ? `<div class="tgrp"><span class="lbl">Выполнено сегодня</span><span class="hint num">${done.length}</span></div>` + done.map(t => todoRow(t)).join('') : '');
@@ -485,7 +565,7 @@ function inboxPick() {
   const list = T.filter(t => t.p === '' && !t.d && !(S && S.t === t.id)).sort((a, b) => (a.dd ? dayDiff(a.dd) : 1e9) - (b.dd ? dayDiff(b.dd) : 1e9) || todoSort(a, b));
   if (!list.length) return '';
   return `<div class="card"><div class="row" style="margin-bottom:6px"><span>${dot('#7f8aa3')}<b>Дела без проекта</b></span></div>` +
-    list.slice(0, 8).map(t => `<button class="item" onclick="go('${t.id}')"><span>${esc(t.n)}${t.dd ? ' ' + dueChip(t.dd) : ''}</span><span class="hint num">${fh(taskSec(t.id))} <span style="color:var(--acc);margin-left:6px">▶</span></span></button>`).join('') + '</div>';
+    list.slice(0, 8).map(t => todoRow(t, { ctx: 'pick', flat: true })).join('') + '</div>';
 }
 function newTodo(done) {
   const el = $('#nt-todo'), n = el.value.trim(); if (!n) return done ? el.blur() : el.focus();
@@ -495,7 +575,7 @@ function newTodo(done) {
   render(); const e2 = $('#nt-todo'); if (e2) e2.focus();
 }
 function todoDone(id) {
-  const t = task(id); if (!t) return; t.d = t.d ? 0 : now();
+  const t = task(id); if (!t || (proj(t.p) && proj(t.p).c)) return render(); t.d = t.d ? 0 : now();
   if (t.d) releaseIfIn(x => x === id);
   if (tEdit === id) tEdit = null;
   saveT(); render(); if (t.d) { buzz(); askCloseIfDone(t.p); }
@@ -503,28 +583,7 @@ function todoDone(id) {
 function todoStar(id) { const t = task(id); t.st = t.st ? 0 : 1; saveT(); render(); }
 function todoDue(id, v) { const t = task(id); t.dd = v || ''; saveT(); render(); }
 function todoRename(id, v) { const t = task(id), n = String(v).trim().slice(0, 100); if (n) { t.n = n; saveT(); } render(); }
-function todoMove(id, pid) { if (!pid) return; const t = task(id), p = proj(pid); t.p = pid; tEdit = null; saveT(); render(); toast(`«${t.n}» теперь в проекте «${p.n}»`); }
-// свайпы по задаче: вправо — готово, влево — перенести на завтра
-(function () {
-  let row = null, fg = null, x0 = 0, y0 = 0, dx = 0, lock = null;
-  document.addEventListener('touchstart', e => {
-    row = e.target.closest('.trow'); if (!row || row.classList.contains('ed') || e.target.closest('input,select,.ted')) { row = null; return; }
-    fg = row.querySelector('.tfg'); const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; dx = 0; lock = null;
-  }, { passive: true });
-  document.addEventListener('touchmove', e => {
-    if (!row) return; const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0;
-    if (!lock) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; lock = Math.abs(mx) > Math.abs(my) * 1.2 ? 'x' : 'y'; if (lock === 'x') { fg.style.transition = 'none'; row.classList.add('sw-on'); } }
-    if (lock !== 'x') return; e.preventDefault();
-    dx = row.classList.contains('dn') && mx < 0 ? mx / 4 : mx; fg.style.transform = `translateX(${dx}px)`;
-  }, { passive: false });
-  document.addEventListener('touchend', () => {
-    if (!row || lock !== 'x') { row = null; return; }
-    const id = row.dataset.id, r = row, f = fg; f.style.transition = ''; row = null;
-    if (dx > 80) { f.style.transform = 'translateX(110%)'; setTimeout(() => todoDone(id), 180); }
-    else if (dx < -80 && !r.classList.contains('dn')) { f.style.transform = 'translateX(-110%)'; setTimeout(() => todoDue(id, isoAdd(1)), 180); }
-    else { f.style.transform = ''; setTimeout(() => r.classList.remove('sw-on'), 220); }
-  });
-})();
+function todoMove(id, pid) { if (!pid) return; const t = task(id), p = pid === '-' ? null : proj(pid); t.p = p ? p.id : ''; t.o = nextO(); tEdit = null; saveT(); render(); toast(p ? `«${t.n}» теперь в проекте «${p.n}»` : `«${t.n}» теперь без проекта`); }
 
 /* ===== Проекты, задачи, переименование ===== */
 function newProject(fid = '') {
@@ -532,7 +591,7 @@ function newProject(fid = '') {
   if (fs) fid = folder(fs.value) ? fs.value : '';
   const tt = {}; cats().forEach(c => { const el = $('#np-t-' + k + '-' + c.id), v = el ? el.value.trim().slice(0, 60) : ''; if (v) tt[c.id] = v; });
   if (!n) return toast('Впиши название проекта');
-  const ppd = $('#np-ppd-' + k), part = ppd && ppd.open ? 1 : 0;
+  const ppd = $('#np-ppd-' + k), part = ppd && ppd.open && $('#np-p-' + k).value.trim() ? 1 : 0;
   const noPrice = $('#np-p-' + k).value.trim() === '', ppv = part ? $('#np-pp-' + k).value.trim() : '', pp = ppv === '' ? 0 : num(ppv);
   if (!noPrice && !(pr >= 0)) return toast('Цена — это число. Или оставь поле пустым и укажи цену позже.');
   if (!(pp >= 0)) return toast('Сколько заплатили — это число. Если пока ничего, впиши 0.');
@@ -576,7 +635,7 @@ function newFolder(done) {
   render(); const el2 = $('#nf'); if (el2) el2.focus(); // «Создать» — сразу вводить следующую
 }
 async function delFolder(id) {
-  const f = folder(id); if (!(await ask(`Удалить папку «${f.n}»? Проекты не удалятся — они останутся во вкладке «Все».`, 'Удалить', true))) return;
+  const f = folder(id); 
   F = F.filter(x => x.id !== id); P.forEach(p => { if (p.f === id) p.f = ''; }); saveF(); saveP(); fIdx = 0; kIdx = 0; render();
 }
 function moveFolder(id, d) {
@@ -601,13 +660,19 @@ function goFolder(i) { if (newPOpen && tab === 'proj') { newPOpen = false; rende
 // Свайп между папками: страница едет за пальцем, при отпускании доводится до ближайшей
 // слушаем весь экран, а не только ленту, чтобы свайп работал и на пустом месте под короткой папкой
 let statAnim = false;
-function statSwipe(dir, fromDx = 0) { // dir: +1 — следующий период, -1 — предыдущий; fromDx — где отпустили палец
+const TF = ['all', 'own', 'proj'];
+function swStep(dir) { // шаг перелистывания: период в статистике или фильтр во «Задачах»
+  if (tab === 'todo') { const i = TF.indexOf(tfMode) + dir; if (i < 0 || i >= TF.length) return false; tfMode = TF[i]; tEdit = null; return true; }
+  sOff += dir; wAll = 0; report = null; return true;
+}
+function statSwipe(dir, fromDx = 0) { // dir: +1 — следующий, -1 — предыдущий; fromDx — где отпустили палец
   const old = $('#swp');
-  if (!old || statAnim) { sOff += dir; wAll = 0; report = null; render(); return; }
+  if (!old || statAnim) { if (swStep(dir)) render(); return; }
+  if (tab === 'todo' && !TF[TF.indexOf(tfMode) + dir]) { old.style.transition = 'transform .28s cubic-bezier(.22,.8,.24,1), opacity .28s'; old.style.transform = ''; old.style.opacity = ''; return; }
   statAnim = true;
   const W = old.offsetWidth, top = old.offsetTop, left = old.offsetLeft;
   const ghost = old.cloneNode(true); ghost.removeAttribute('id');
-  sOff += dir; wAll = 0; report = null; render();
+  swStep(dir); render();
   const nw = $('#swp'), app = $('#app');
   Object.assign(ghost.style, { position: 'absolute', top: top + 'px', left: left + 'px', width: W + 'px', margin: '0', pointerEvents: 'none', transition: 'none', transform: `translateX(${fromDx}px)` });
   app.appendChild(ghost);
@@ -622,15 +687,47 @@ function statSwipe(dir, fromDx = 0) { // dir: +1 — следующий пери
   nw.addEventListener('transitionend', done, { once: true }); setTimeout(done, 500);
 }
 // Свайпы: папки в «Проектах» (лента едет за пальцем) и периоды в «Статистике». Слушаем весь экран.
+// возврат назад с анимацией: текущий экран уезжает вправо, предыдущий выезжает слева
+function backAnim(go, fromDx = 0) {
+  const app = $('#app'), W = app.clientWidth, ease = 'cubic-bezier(.22,.8,.24,1)';
+  if (!go) { app.style.transition = `transform .28s ${ease}, opacity .28s`; app.style.transform = ''; app.style.opacity = ''; setTimeout(() => app.style.transition = '', 300); return; }
+  app.style.transition = `transform .22s ${ease}, opacity .22s`; app.style.transform = `translateX(${W}px)`; app.style.opacity = '0';
+  setTimeout(() => {
+    app.style.transition = 'none'; app.style.transform = `translateX(${-W * .25}px)`; app.style.opacity = '0';
+    goBack(); void app.offsetWidth;
+    app.style.transition = `transform .34s ${ease}, opacity .3s ease-out`; app.style.transform = ''; app.style.opacity = '';
+    setTimeout(() => app.style.transition = '', 360);
+  }, 200);
+}
+// Нижняя панель: «стеклянная» плашка под активной вкладкой, переезжает при нажатии
+const TABS = ['home', 'todo', 'proj', 'stat'];
+function goTab(t) { tab = t; cur = null; ren = null; settings = false; endAsk = false; resetAsk = false; tEdit = null; render(); }
+function pillGeo() { const nav = document.querySelector('nav'), b = nav.querySelector('button'); return { nav, w: b.offsetWidth, x0: b.offsetLeft, top: b.offsetTop, h: b.offsetHeight }; }
+function placePill(i, drag) {
+  const pill = $('#pill'); if (!pill) return; const g = pillGeo();
+  if (i == null) i = TABS.indexOf(tab);
+  Object.assign(pill.style, { width: (g.w - 8) + 'px', top: (g.top - 2) + 'px', height: (g.h + 4) + 'px' });
+  pill.style.transform = `translateX(${g.x0 + 4 + i * g.w}px)${drag ? ' scale(1.12, 1.06)' : ''}`;
+}
+function initPill() {
+  const nav = document.querySelector('nav'); if (!nav || $('#pill')) return;
+  const pill = document.createElement('i'); pill.id = 'pill'; nav.prepend(pill);
+  pill.style.transition = 'none'; placePill(); void pill.offsetWidth; pill.style.transition = '';
+  addEventListener('resize', () => placePill());
+}
 function initSwipe() {
   const app = $('#app'); let mode = null, pg = null, tr = null, el = null, x0 = 0, y0 = 0, t0 = 0, lock = null, dx = 0;
   app.addEventListener('touchstart', e => {
     lock = null; dx = 0;
     pg = $('#pager'); tr = !settings && pg && pg.offsetParent && ((tab === 'proj' && !cur) || tab === 'home') ? pg.firstElementChild : null;
-    el = !settings && tab === 'stat' && !statAnim ? $('#swp') : null;
+    const t = e.touches[0];
+    // свайп от левого края — назад (из проекта и из настроек)
+    if ((settings || (tab === 'proj' && cur)) && t.clientX < 28 && e.touches.length === 1) { mode = 'b'; el = app; x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); return; }
+    el = !settings && (tab === 'stat' || (tab === 'todo' && !tEdit)) && !statAnim ? $('#swp') : null;
     mode = tr ? 'p' : el ? 's' : null;
-    if (!mode || e.touches.length > 1 || e.target.closest('.ftabs,textarea,input,select,.trow')) { lock = 'n'; return; }
-    const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
+    if (e.touches.length > 1 || e.target.closest('.ftabs,textarea,input,select,.cpk')) { lock = 'n'; return; }
+    if (!mode) { lock = 'n'; return; }
+    x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
   }, { passive: true });
   app.addEventListener('touchmove', e => {
     if (lock === 'n') return;
@@ -642,7 +739,9 @@ function initSwipe() {
     }
     if (lock !== 'x') return;
     e.preventDefault();
-    if (mode === 'p') {
+    if (mode === 'b') {
+      dx = Math.max(0, mx); app.style.transform = `translateX(${dx}px)`; app.style.opacity = String(1 - Math.min(.5, dx / app.clientWidth * .7));
+    } else if (mode === 'p') {
       const ci = pgIdx(), n = tr.children.length, edge = (ci === 0 && mx > 0) || (ci === n - 1 && mx < 0);
       dx = edge ? mx / 3 : mx;
       tr.style.transform = `translateX(calc(${-ci * 100}% + ${dx}px))`;
@@ -655,7 +754,8 @@ function initSwipe() {
     if (lock !== 'x') { lock = null; return; }
     lock = null;
     const W = app.clientWidth, v = Math.abs(dx) / Math.max(1, Date.now() - t0), go = Math.abs(dx) > W * 0.22 || (v > 0.35 && Math.abs(dx) > 24);
-    if (mode === 'p') pagerGo(pgIdx() + (go ? (dx < 0 ? 1 : -1) : 0));
+    if (mode === 'b') backAnim(go && dx > 0, dx);
+    else if (mode === 'p') pagerGo(pgIdx() + (go ? (dx < 0 ? 1 : -1) : 0));
     else if (go) statSwipe(dx < 0 ? 1 : -1, dx);
     else { el.style.transition = 'transform .28s cubic-bezier(.22,.8,.24,1), opacity .28s'; el.style.transform = ''; el.style.opacity = ''; }
   };
@@ -682,7 +782,7 @@ function toggleTask(id) {
   if (t.d) askCloseIfDone(t.p);
 }
 async function delTask(id) {
-  const t = task(id); if (!(await ask('Удалить задачу «' + t.n + '» и всё её время?', 'Удалить', true))) return;
+  const t = task(id); 
   releaseIfIn(x => x === id);
   const months = new Set(E.filter(e => e.t === id).map(e => ymOf(e.a)));
   E = E.filter(e => e.t !== id); T = T.filter(x => x.id !== id);
@@ -713,7 +813,7 @@ async function closeProject(pid) {
 }
 function reopenProject(pid) { proj(pid).c = 0; saveP(); render(); }
 async function delProject(pid) {
-  const p = proj(pid); if (!(await ask('Удалить проект «' + p.n + '» со всеми задачами и временем? Это не отменить.', 'Удалить', true))) return;
+  const p = proj(pid); 
   const ids = new Set(T.filter(t => t.p === pid).map(t => t.id));
   releaseIfIn(x => ids.has(x));
   const months = new Set(E.filter(e => ids.has(e.t)).map(e => ymOf(e.a)));
@@ -721,7 +821,7 @@ async function delProject(pid) {
   saveP(); saveT(); months.forEach(saveM); cur = null; render();
 }
 async function delEntry(id) {
-  const e = E.find(x => x.id === id); if (!(await ask('Удалить отрезок ' + fdate(e.a) + ' ' + ftime(e.a) + ' (' + fh(e.b - e.a) + ')?'))) return;
+  const e = E.find(x => x.id === id); 
   E = E.filter(x => x.id !== id); saveM(ymOf(e.a)); render();
 }
 let editE = null; const openT = new Set();
@@ -739,7 +839,7 @@ function addManual(tid) {
   const d = $('#md-' + tid).value, m = parseHM($('#mm-' + tid).value);
   if (!d || !(m > 0)) return toast('Укажи дату и время в формате чч:мм, например 1:30');
   const a = Math.floor(new Date(d + 'T12:00:00').getTime() / 1000);
-  E.push({ id: uid(), t: tid, a, b: a + Math.round(m * 60), w: null }); saveM(ymOf(a)); openT.add(tid); render();
+  E.push({ id: uid(), t: tid, a, b: a + Math.round(m * 60), w: null }); saveM(ymOf(a)); tEdit = tid; render();
 }
 let editW = null, addW = false;
 const atTime = (base, hm) => { const d = new Date(base * 1000), [hh, mm] = hm.split(':').map(Number); d.setHours(hh, mm, 0, 0); return Math.floor(d.getTime() / 1000); };
@@ -754,18 +854,54 @@ function setEntryMin(eid, v) {
   if (e && m > 0) { e.b = e.a + Math.round(m * 60); saveM(ymOf(e.a)); }
   render();
 }
+// отрезок «с … по …» внутри сессии (сессия могла перейти через полночь)
+function spanIn(w, sv, ev) {
+  let a = atTime(w.a, sv), b = atTime(w.a, ev);
+  if (a < w.a - 60) { a += 86400; b += 86400; }
+  if (b <= a) b += 86400;
+  return [a, b];
+}
+const liveW = wid => S && S.w.id === wid ? { id: wid, a: S.w.a, b: now(), k: [] } : null;
 function addShiftEntry(wid) {
-  const w = W.find(x => x.id === wid), sel = $('#wt-' + wid).value, m = parseHM($('#wm-' + wid).value);
+  const w = W.find(x => x.id === wid) || liveW(wid), sel = $('#wt-' + wid).value, sv = $('#wf-' + wid).value, ev = $('#wto-' + wid).value;
   if (!w || !sel) return toast('Сначала создай проект');
-  if (!(m > 0)) return toast('Укажи время в формате чч:мм, например 1:30');
+  if (!sv || !ev) return toast('Укажи, с какого и по какое время шла задача');
+  const [a, b] = spanIn(w, sv, ev);
+  if (a < w.a || b > w.b + 60) return toast(`Время задачи должно быть внутри сессии: ${ftime(w.a)}–${S && S.w.id === wid ? 'сейчас' : ftime(w.b)}`);
   let tid;
   if (sel.startsWith('p:')) {
     const n = $('#wn-' + wid).value.trim(); if (!n) return toast('Впиши название новой задачи');
     const t = { id: uid(), p: sel.slice(2), n, d: 0 }; T.push(t); saveT(); tid = t.id;
   } else tid = sel.slice(2);
-  const dur = Math.round(m * 60), last = Math.max(w.a, ...E.filter(e => e.w === wid).map(e => e.b), ...(w.k || []).map(k => k[1]));
-  const a = last + dur <= w.b ? last : Math.max(w.a, w.b - dur);
-  E.push({ id: uid(), t: tid, a, b: a + dur, w: wid }); saveM(ymOf(a)); render();
+  const end = Math.min(b, Math.max(w.b, now())), dn = $('#wd-' + wid) && $('#wd-' + wid).checked, tk = task(tid);
+  E.push({ id: uid(), t: tid, a, b: end, w: wid }); saveM(ymOf(a));
+  if (tk && !!tk.d !== !!dn) { tk.d = dn ? end : 0; if (dn) releaseIfIn(x => x === tid); saveT(); }
+  liveAdd = false; render();
+  if (dn && tk) askCloseIfDone(tk.p);
+}
+function setEntryTimes(eid, wid) {
+  const e = E.find(x => x.id === eid), w = W.find(x => x.id === wid) || liveW(wid), sv = $('#ef-' + eid).value, ev = $('#et-' + eid).value;
+  if (!e || !w || !sv || !ev) return;
+  const [a, b] = spanIn(w, sv, ev), oldYm = ymOf(e.a);
+  if (a < w.a || b > w.b + 60) { toast('Время задачи должно быть внутри сессии'); return render(); }
+  e.a = a; e.b = b; saveM(oldYm); if (ymOf(a) !== oldYm) saveM(ymOf(a)); render();
+}
+// форма «задача с … по …» (для прошедшей и для текущей сессии)
+function entryForm(wid, from) {
+  return `<select id="wt-${wid}" onchange="document.getElementById('wn-${wid}').style.display=this.value.startsWith('p:')?'block':'none';document.getElementById('wd-${wid}').checked=this.value.startsWith('t:')&&!!(task(this.value.slice(2))||{}).d">${taskOptions()}</select>
+    <input id="wn-${wid}" placeholder="Название новой задачи" maxlength="100" style="display:${P.length && !T.length ? 'block' : 'none'}">
+    <div class="inl"><span class="hint">с</span><input id="wf-${wid}" type="time" value="${ftime(from)}"><span class="hint">по</span><input id="wto-${wid}" type="time" value="${ftime(Math.min(from + 3600, Math.max(from, now())))}"></div>
+    <div class="row" style="margin:2px 0 8px"><span>Задача выполнена<div class="hint">Выключено — сделана не до конца, останется в работе</div></span>
+      <label class="tgl"><input id="wd-${wid}" type="checkbox" aria-label="Задача выполнена"><i></i></label></div>
+    <button class="btn" onclick="addShiftEntry('${wid}')">Добавить задачу</button>`;
+}
+let liveAdd = false;
+function liveAddHTML() {
+  if (!S) return '';
+  const last = Math.max(S.w.a, ...E.filter(e => e.w === S.w.id).map(e => e.b));
+  return liveAdd ? `<div class="card"><div class="row"><span class="lbl">Задача, которую уже сделал</span><button class="x" onclick="liveAdd=false;render()">✕</button></div>
+      <div class="hint" style="margin:4px 0 6px">Внутри этой сессии: с ${ftime(S.w.a)} до сейчас</div>${entryForm(S.w.id, Math.min(last, now() - 60))}</div>`
+    : `<button class="link" style="display:block;margin:2px auto 10px" onclick="liveAdd=true;render()">+ Добавить задачу, которую уже сделал</button>`;
 }
 function setBreakMin(wid, i, v) { const w = W.find(x => x.id === wid), m = parseHM(v); if (w && w.k[i] && m > 0) { w.k[i][1] = w.k[i][0] + Math.round(m * 60); saveW(ymOf(w.a)); } render(); }
 function delBreak(wid, i) { const w = W.find(x => x.id === wid); if (!w) return; w.k.splice(i, 1); saveW(ymOf(w.a)); render(); }
@@ -777,7 +913,14 @@ function addBreak(wid) {
   (w.k = w.k || []).push([a, a + dur]); w.k.sort((x, y) => x[0] - y[0]); saveW(ymOf(w.a)); render();
 }
 function addPastShift() {
-  const d = $('#aw-d').value, sv = $('#aw-s').value, ev = $('#aw-e').value;
+  const d = $('#aw-d').value, sv = $('#aw-s').value, ev = $('#aw-e').value, live = $('#aw-live') && $('#aw-live').checked;
+  if (live) {
+    if (!d || !sv) return toast('Укажи дату и время начала');
+    const a = atTime(Math.floor(new Date(d + 'T12:00:00').getTime() / 1000), sv);
+    if (a >= now()) return toast('Начало должно быть в прошлом');
+    S = newS(); S.w.a = a; ended = null; addW = false; saveS(); buzz(); render();
+    return toast(`Сессия идёт с ${ftime(a)}. Если уже что-то сделал — нажми «+ Добавить задачу, которую уже сделал».`);
+  }
   if (!d || !sv || !ev) return toast('Укажи дату, начало и конец');
   const base = Math.floor(new Date(d + 'T12:00:00').getTime() / 1000), a = atTime(base, sv); let b = atTime(base, ev);
   if (b <= a) b += 86400;
@@ -787,7 +930,7 @@ function addPastShift() {
 }
 let endedLbl = 'Сессия завершена';
 async function delShift(id) {
-  if (!(await ask('Удалить запись о сессии? Время по задачам останется.', 'Удалить', true))) return;
+  
   const w = W.find(x => x.id === id); W = W.filter(x => x.id !== id); saveW(ymOf(w.a)); render();
 }
 
@@ -795,7 +938,7 @@ async function delShift(id) {
 let lastBk = 0, bkText = null, bkRestore = false;
 function backupData() {
   return JSON.stringify({ app: 'studio-timer', v: 1, at: now(),
-    F: F.map(f => [f.id, f.n, f.cr, f.cl ?? -1]), P: P.map(p => [p.id, p.n, p.pr, p.c, p.cr, p.h, p.f || '', p.u ? 1 : 0, p.g || [], p.t || {}, p.pp || 0, p.wt || 0, p.cl ?? -1, p.part ? 1 : 0]), T: T.map(t => [t.id, t.p, t.n, t.d, t.dd || '', t.st ? 1 : 0, t.o ?? 0]),
+    F: F.map(f => [f.id, f.n, f.cr, f.cl ?? -1]), P: P.map(p => [p.id, p.n, p.pr, p.c, p.cr, p.h, p.f || '', p.u ? 1 : 0, p.g || [], p.t || {}, p.pp || 0, p.wt || 0, p.cl ?? -1, p.part ? 1 : 0, p.nt || '']), T: T.map(t => [t.id, t.p, t.n, t.d, t.dd || '', t.st ? 1 : 0, t.o ?? 0]),
     E: E.map(e => [e.id, e.t, e.a, e.b, e.w]), W: W.map(w => [w.id, w.a, w.b, w.k || []]), O: opt, S });
 }
 async function backup() {
@@ -816,7 +959,7 @@ async function restore() {
   let d; try { d = JSON.parse($('#rst').value.trim()); } catch { return toast('Это не похоже на копию: текст повреждён или вставлен не целиком.'); }
   if (!d || d.app !== 'studio-timer' || !Array.isArray(d.P) || !Array.isArray(d.T) || !Array.isArray(d.E)) return toast('Это не копия из этого приложения.');
   if (!(await ask(`Копия от ${fdate(d.at)} ${ftime(d.at)}: проектов ${d.P.length}, задач ${d.T.length}.\n\nВсе текущие данные будут заменены данными из копии.`, 'Восстановить', true))) return;
-  P = d.P.map(r => ({ id: r[0], n: r[1], pr: r[2], c: r[3], cr: r[4], h: r[5] || [], f: r[6] || '', u: r[7] ? 1 : 0, g: Array.isArray(r[8]) ? r[8] : [], t: r[9] && typeof r[9] === 'object' ? r[9] : {}, pp: +r[10] || 0, wt: +r[11] || 0, cl: r[12] ?? -1, part: r.length > 13 ? (r[13] ? 1 : 0) : (+r[10] > 0 && +r[10] < +r[2] ? 1 : 0) }));
+  P = d.P.map(r => ({ id: r[0], n: r[1], pr: r[2], c: r[3], cr: r[4], h: r[5] || [], f: r[6] || '', u: r[7] ? 1 : 0, g: Array.isArray(r[8]) ? r[8] : [], t: r[9] && typeof r[9] === 'object' ? r[9] : {}, pp: +r[10] || 0, wt: +r[11] || 0, nt: r[14] || '', cl: r[12] ?? -1, part: r.length > 13 ? (r[13] ? 1 : 0) : (+r[10] > 0 && +r[10] < +r[2] ? 1 : 0) }));
   F = (d.F || []).map(r => ({ id: r[0], n: r[1], cr: r[2], cl: r[3] ?? -1 })); F.forEach((f, i) => { if (!(f.cl >= 0)) f.cl = i % 8; });
   const keep = { autoBk: opt.autoBk };
   opt = Object.assign(DEF_OPT(), keep, d.O || {}); setFull(opt.full !== false);
@@ -891,7 +1034,7 @@ function chatBkCard() {
   const ab = opt.autoBk || '';
   return `<div class="card"><div class="lbl">Автокопия в чат с ботом</div>
     <div class="hint" style="margin:6px 0 2px">Бот сам пришлёт файл копии, когда ты откроешь приложение и пройдёт выбранный срок.</div>
-    <div class="seg" style="margin:10px 0 2px">${[['', 'Выкл'], ['day', 'Каждый день'], ['week', 'Раз в неделю']].map(([v, t]) => `<button class="${ab === v ? 'on' : ''}" onclick="opt.autoBk='${v}';saveO();render()">${t}</button>`).join('')}</div></div>`;
+    <div class="seg" style="margin:10px 0 2px">${[['', 'Выкл'], ['day', 'Ежедневно'], ['week', 'Еженедельно']].map(([v, t]) => `<button class="${ab === v ? 'on' : ''}" onclick="opt.autoBk='${v}';saveO();render()">${t}</button>`).join('')}</div></div>`;
 }
 function backupCard() {
   const days = lastBk ? Math.floor((now() - lastBk) / 86400) : null;
@@ -980,7 +1123,7 @@ function reportText() {
     t += `\nПРОЕКТЫ\n`;
     D.rows.forEach((x, i) => {
       const p = x.p;
-      t += `\n${i + 1}. ${p.n} [папка: ${fname(p)}; ${p.c ? 'закрыт ' + fdate(p.c) : 'в работе' + (isW(p) ? ' (в ожидании с ' + fdate(p.wt) + ')' : '') + ' — не закрыт, в заработок не входит'}]${projTags(p).length ? '\n   Теги: ' + tagsTxt(p) : ''}\n   Стоимость: ${priceTxt(p)}`;
+      t += `\n${i + 1}. ${p.n} [папка: ${fname(p)}; ${p.c ? 'закрыт ' + fdate(p.c) : 'в работе' + (isW(p) ? ' (в ожидании с ' + fdate(p.wt) + ')' : '') + ' — не закрыт, в заработок не входит'}]${projTags(p).length ? '\n   Теги: ' + tagsTxt(p) : ''}${p.nt ? '\n   Заметка: ' + p.nt.replace(/\n+/g, ' / ') : ''}\n   Стоимость: ${priceTxt(p)}`;
       if (p.h.length) t += ` (изначально ${money(base(p))}; ` + p.h.map(h => `${h[1] > 0 ? '+' : ''}${money(h[1])} ${fdate(h[0])}${h[2] ? ' «' + h[2] + '»' : ''}`).join('; ') + ')';
       if (!p.c && !p.u) t += p.part ? `\n   Оплачено не всё: получено ${money(paid(p))}, осталось получить ${money(owed(p))}` : `\n   Оплата: получена полностью`;
       t += `\n   Часов по проекту всего: ${hd(projSec(p.id))}; из них за период: ${hd(x.sec)}\n`;
@@ -1115,8 +1258,9 @@ function taskOptions() {
   const ps = P.slice().sort((x, y) => (!!x.c - !!y.c) || y.cr - x.cr);
   if (!ps.length) return '<option value="">Сначала создай проект</option>';
   return ps.map(p => `<optgroup label="${esc(p.n)}${p.c ? ' (закрыт)' : ''}">` +
-    T.filter(t => t.p === p.id).sort((a, b) => (!!a.d - !!b.d)).map(t => `<option value="t:${t.id}">${esc(t.n)}${t.d ? ' ✓' : ''}</option>`).join('') +
-    `<option value="p:${p.id}">＋ новая задача в «${esc(p.n)}»</option></optgroup>`).join('');
+    T.filter(t => t.p === p.id).sort((a, b) => (!!a.d - !!b.d) || a.o - b.o).map(t => `<option value="t:${t.id}">${esc(t.n)}${t.d ? ' ✓' : ''}</option>`).join('') +
+    `<option value="p:${p.id}">＋ новая задача в «${esc(p.n)}»</option></optgroup>`).join('') +
+    (T.some(t => t.p === '') ? `<optgroup label="Без проекта">${T.filter(t => t.p === '').sort((a, b) => (!!a.d - !!b.d) || a.o - b.o).map(t => `<option value="t:${t.id}">${esc(t.n)}${t.d ? ' ✓' : ''}</option>`).join('')}</optgroup>` : '');
 }
 function shiftEditor(w) {
   const es = E.filter(e => e.w === w.id).sort((a, b) => a.a - b.a), work = sum(es);
@@ -1125,7 +1269,8 @@ function shiftEditor(w) {
     <div class="inl"><input id="ws-${w.id}" type="time" value="${ftime(w.a)}"><span class="hint">–</span><input id="we-${w.id}" type="time" value="${ftime(w.b)}"><button class="btn sm alt" onclick="saveShiftTimes('${w.id}')">OK</button></div>
     <div class="lbl" style="margin-top:8px">Задачи в сессии</div>` +
     (es.length ? es.map(e => `<div class="line"><span>${dot(colorOf(pidOf(e)))}${esc(tname(e.t))} <span class="hint">${esc(pname(e.t))}</span></span>
-      <span class="inl"><input ${hmAttrs} value="${hm(e.b - e.a)}" style="width:78px;margin:0;padding:8px;text-align:right" class="num" onchange="setEntryMin('${e.id}',this.value)"><button class="x" onclick="delEntry('${e.id}')">✕</button></span></div>`).join('')
+      <span style="white-space:nowrap">${task(e.t) ? `<button class="due ${task(e.t).d ? 'today' : ''}" style="border:0;font:inherit;font-size:11px" onclick="toggleTask('${e.t}')">${task(e.t).d ? '✓ выполнена' : 'не завершена'}</button>` : ''}<button class="x" onclick="delEntry('${e.id}')">✕</button></span></div>
+      <div class="inl" style="margin-top:-6px"><input id="ef-${e.id}" type="time" value="${ftime(e.a)}" style="margin:0" onchange="setEntryTimes('${e.id}','${w.id}')"><span class="hint">–</span><input id="et-${e.id}" type="time" value="${ftime(e.b)}" style="margin:0" onchange="setEntryTimes('${e.id}','${w.id}')"><span class="hint num" style="white-space:nowrap">${fh(e.b - e.a)}</span></div>`).join('')
       : '<div class="hint" style="padding:6px 0">Пока ни одной задачи</div>') +
     (work + brSec(w) > wWork(w) ? `<div class="hint" style="color:var(--amb)">Время задач и перерывов (${fh(work + brSec(w))}) больше длительности сессии (${fh(wWork(w))}) — проверь время начала, конца и перерывы.</div>` : '') +
     `<div class="lbl" style="margin-top:12px">Перерывы</div>` +
@@ -1133,17 +1278,14 @@ function shiftEditor(w) {
       <span class="inl"><input ${hmAttrs} value="${hm(k[1] - k[0])}" style="width:78px;margin:0;padding:8px;text-align:right" class="num" onchange="setBreakMin('${w.id}',${i},this.value)"><button class="x" onclick="delBreak('${w.id}',${i})">✕</button></span></div>`).join('')
       : '<div class="hint" style="padding:6px 0">Без перерывов</div>') +
     `<div class="inl"><input id="wb-${w.id}" ${hmAttrs} placeholder="Перерыв, чч:мм" class="num"><button class="btn sm alt" onclick="addBreak('${w.id}')">+ Перерыв</button></div>` +
-    `<div class="lbl" style="margin-top:12px">Добавить задачу</div>
-    <select id="wt-${w.id}" onchange="document.getElementById('wn-${w.id}').style.display=this.value.startsWith('p:')?'block':'none'">${taskOptions()}</select>
-    <input id="wn-${w.id}" placeholder="Название новой задачи" maxlength="100" style="display:${P.length && !T.length ? 'block' : 'none'}">
-    <div class="inl"><input id="wm-${w.id}" ${hmAttrs} placeholder="Время, чч:мм" class="num"><button class="btn sm" onclick="addShiftEntry('${w.id}')">Добавить</button></div>
+    `<div class="lbl" style="margin-top:12px">Добавить задачу</div>${entryForm(w.id, Math.min(Math.max(w.a, ...es.map(e => e.b)), w.b - 60))}
     <button class="btn del" onclick="delShift('${w.id}')">Удалить сессию</button>
     <button class="btn alt" onclick="editW=null;render()">Готово</button></div>`;
 }
 function pickProject(p) {
   const ts = T.filter(t => t.p === p.id && !t.d && !(S && S.t === t.id));
   return `<div class="card"><div class="row" style="margin-bottom:6px"><span>${dot(colorOf(p.id))}<b>${esc(p.n)}</b></span></div>` +
-    ts.map(t => `<button class="item" onclick="go('${t.id}')"><span>${esc(t.n)}</span><span class="hint num">${fh(taskSec(t.id))} <span style="color:var(--acc);margin-left:6px">▶</span></span></button>`).join('') +
+    ts.map(t => todoRow(t, { ctx: 'pick', flat: true })).join('') +
     `<div class="inl" style="margin-top:4px"><input id="nt-${p.id}" placeholder="Новая задача" maxlength="100" onkeydown="if(event.key==='Enter')newTask('${p.id}',true,this)"><button class="btn sm" onclick="newTask('${p.id}',true,this)">▶</button></div></div>`;
 }
 function pickerHTML() { return inboxPick() + pickerProj(); }
@@ -1162,8 +1304,8 @@ function pickerProj() {
   return h;
 }
 const projectForm = (fid = '') => `<input id="np-n-${fid || 'x'}" placeholder="Название проекта" maxlength="80">
-  <input id="np-p-${fid || 'x'}" type="text" inputmode="decimal" placeholder="Цена, ₽ — можно позже">
-  <details class="sw" id="np-ppd-${fid || 'x'}" style="margin:0 0 6px;text-align:left"><summary style="text-align:left;padding:2px 4px 8px">Не вся сумма получена</summary><input id="np-pp-${fid || 'x'}" type="text" inputmode="decimal" placeholder="Сколько уже заплатили, ₽ (0 — ничего)"></details>
+  <input id="np-p-${fid || 'x'}" type="text" inputmode="decimal" placeholder="Цена, ₽ — можно позже" oninput="const d=document.getElementById('np-ppd-${fid || 'x'}');d.style.display=this.value.trim()?'':'none';if(!this.value.trim())d.open=false">
+  <details class="sw" id="np-ppd-${fid || 'x'}" style="margin:0 0 6px;text-align:left;display:none"><summary style="text-align:left;padding:2px 4px 8px">Не вся сумма получена</summary><input id="np-pp-${fid || 'x'}" type="text" inputmode="decimal" placeholder="Сколько уже заплатили, ₽ (0 — ничего)"></details>
   ${catFields('np-t-' + (fid || 'x') + '-')}${catLists()}` +
   (F.length ? `<div class="lbl" style="margin:2px 0 0 4px">Папка</div><select id="np-f-${fid || 'x'}"><option value="">Без папки</option>${F.map(f => `<option value="${f.id}" ${f.id === fid ? 'selected' : ''}>${esc(f.n)}</option>`).join('')}</select>` : '') + `
   <button class="btn" onclick="newProject('${fid}')">Создать проект</button>`;
@@ -1187,7 +1329,8 @@ function viewHome() {
       h += `<button class="btn warn" onclick="takeBreak()">☕ Перерыв</button>`;
     }
     let sc = ''; const byT = {}; ws.forEach(e => byT[e.t] = (byT[e.t] || 0) + e.b - e.a);
-    if (Object.keys(byT).length) sc = `<div class="card"><div class="lbl" style="margin-bottom:6px">В этой сессии</div>` + Object.entries(byT).sort((x, y) => y[1] - x[1]).map(([t, s]) => { const tk = task(t); const dn = tk && tk.d && tk.d >= S.w.a; return `<div class="line"><span ${dn ? 'style="color:var(--mut);text-decoration:line-through"' : ''}>${dot(colorOf((tk || {}).p))}${esc(tname(t))}${dn ? ' <span class="top">✓</span>' : ''}</span><span class="num hint" style="white-space:nowrap">${fh(s)}${dn ? ` <button class="ib" style="padding:4px 9px" onclick="todoDone('${t}')" aria-label="Вернуть в работу">↺</button>` : ''}</span></div>`; }).join('') + '</div>';
+    if (Object.keys(byT).length) sc = `<div class="card"><div class="lbl" style="margin-bottom:2px">В этой сессии</div>` + Object.entries(byT).sort((x, y) => y[1] - x[1]).filter(([t]) => task(t)).map(([t, sec]) => todoRow(task(t), { ctx: 'sess', flat: true, sec })).join('') + '</div>';
+    sc += liveAddHTML();
     if (S.br) { h += sc; } else if (S.t) {
       const pid = (task(S.t) || {}).p;
       h += `<div class="card"><div class="row"><span class="lbl">${dot(S.r ? colorOf(pid) : 'var(--amb)', !!S.r)}${S.r ? 'в работе' : 'пауза'}</span><span class="hint">${esc(pname(S.t))}</span></div>
@@ -1217,7 +1360,9 @@ function viewHome() {
       <div class="trio"><div><div class="v">${hm(tst)}</div><div class="hint">в сессиях</div></div><div><div class="v">${hm(ted)}</div><div class="hint">в задачах</div></div><div><div class="v">${tw.length}</div><div class="hint">${tw.length === 1 ? 'сессия' : tw.length >= 2 && tw.length <= 4 ? 'сессии' : 'сессий'}</div></div></div>` +
     (addW ? `<div class="card" style="margin-top:14px"><div class="lbl">Прошедшая сессия</div>
       <input id="aw-d" type="date" value="${new Date().toLocaleDateString('sv')}">
-      <div class="inl"><input id="aw-s" type="time" value="12:00"><span class="hint">–</span><input id="aw-e" type="time" value="18:00"></div>
+      <div class="inl"><span class="hint">с</span><input id="aw-s" type="time" value="12:00"><span class="hint" id="aw-ew1">по</span><input id="aw-e" type="time" value="18:00"></div>
+      <div class="row" style="margin:2px 0 10px"><span>Сессия ещё идёт<div class="hint">Укажи только начало — дальше она продолжится как обычная</div></span>
+        <label class="tgl"><input id="aw-live" type="checkbox" onchange="['aw-e','aw-ew1'].forEach(i=>document.getElementById(i).style.visibility=this.checked?'hidden':'')" aria-label="Сессия ещё идёт"><i></i></label></div>
       <div class="two"><button class="btn alt" onclick="addW=false;render()">Отмена</button><button class="btn" onclick="addPastShift()">Создать</button></div></div>`
       : `<button class="link" onclick="addW=true;render()">+ Добавить прошедшую сессию</button>`) +
     `</div></section>`;
@@ -1234,8 +1379,8 @@ function foldersCard() {
   const dis = 'disabled style="opacity:.2"';
   let h = `<div class="card"><div class="lbl" style="margin-bottom:4px">Папки</div>`;
   h += F.length ? F.map((f, i) => `<div class="line">${ren === 'f:' + f.id ? renInput(f.n, 40)
-    : `<span>${opt.folderCol ? `<button class="cdot" style="background:${COLS[f.cl >= 0 ? f.cl : 0]}" onclick="cpkF=cpkF==='${f.id}'?null:'${f.id}';render()" aria-label="Цвет папки"></button>` : '📁 '}${esc(f.n)} <span class="hint num">${P.filter(p => p.f === f.id).length}</span></span><span style="white-space:nowrap">
-      <button class="x" onclick="moveFolder('${f.id}',-1)" ${i ? '' : dis} aria-label="Выше">↑</button><button class="x" onclick="moveFolder('${f.id}',1)" ${i < F.length - 1 ? '' : dis} aria-label="Ниже">↓</button><button class="x" onclick="startRen('f:${f.id}')" aria-label="Переименовать">✎</button><button class="x" onclick="delFolder('${f.id}')" aria-label="Удалить" style="color:var(--red)">✕</button></span>`}</div>${opt.folderCol && cpkF === f.id ? swatches(f.cl, `setFColor.bind(null,'${f.id}')`) + '<div style="height:8px"></div>' : ''}`).join('')
+    : `<span>${opt.folderCol ? `<button class="cdot" style="background:${COLS[f.cl >= 0 ? f.cl : 0]}" onclick="cpkF=cpkF==='${f.id}'?null:'${f.id}';render()" aria-label="Цвет папки"></button>` : '📁 '}<span onclick="startRen('f:${f.id}')" style="cursor:text">${esc(f.n)}</span> <span class="hint num">${P.filter(p => p.f === f.id).length}</span></span><span style="white-space:nowrap">
+      <button class="x" onclick="moveFolder('${f.id}',-1)" ${i ? '' : dis} aria-label="Выше">↑</button><button class="x" onclick="moveFolder('${f.id}',1)" ${i < F.length - 1 ? '' : dis} aria-label="Ниже">↓</button><button class="x" onclick="delFolder('${f.id}')" aria-label="Удалить" style="color:var(--red)">✕</button></span>`}</div>${opt.folderCol && cpkF === f.id ? swatches(f.cl, `setFColor.bind(null,'${f.id}')`) + '<div style="height:8px"></div>' : ''}`).join('')
     : '<div class="hint" style="padding:8px 0">Папок пока нет</div>';
   h += `<div class="inl" style="margin-top:8px"><input id="nf" placeholder="Название папки" maxlength="40" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newFolder(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newFolder()">Создать</button></div>`;
   h += `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Вкладка «Все»<div class="hint">${opt.hideAll ? 'Скрыта. Проекты без папки — во вкладке «Без папки».' : 'Показывает все проекты сразу'}</div></span>
@@ -1272,12 +1417,19 @@ function resetCard() {
 }
 try { localStorage.removeItem('st-sub'); } catch {} // остаток старой версии с подпиской
 function appCard() {
-  if (!canFull) return '';
-  return `<div class="card"><div class="lbl">Приложение</div><div class="row" style="margin-top:8px"><span>Во весь экран<div class="hint">Скрывает шапку Telegram</div></span>
-    <label class="tgl"><input type="checkbox" ${opt.full === false ? '' : 'checked'} onchange="opt.full=this.checked;saveO();setFull(this.checked);render()" aria-label="Во весь экран"><i></i></label></div></div>`;
+  let h = '';
+  if (canFull) h += `<div class="row" style="margin-top:8px"><span>Во весь экран<div class="hint">Скрывает шапку Telegram</div></span>
+    <label class="tgl"><input type="checkbox" ${opt.full === false ? '' : 'checked'} onchange="opt.full=this.checked;saveO();setFull(this.checked);render()" aria-label="Во весь экран"><i></i></label></div>`;
+  if (me && lsGet('st-multi-acc')) { // показываем, только когда на этом устройстве уже открывали другой аккаунт
+    const on = mainAcc && mainAcc !== 'off';
+    h += `<div class="row" style="${canFull ? 'border-top:1px solid var(--line);margin-top:6px;' : 'margin-top:8px;'}padding-top:12px"><span>Проверка аккаунта<div class="hint">${on ? 'Основной на этом устройстве: ' + esc(mainAcc.n) + '. Если открыть приложение из другого аккаунта — предупредит.' : 'Выключена'}</div></span>
+      <label class="tgl"><input type="checkbox" ${on ? 'checked' : ''} onchange="setMainAcc(this.checked?null:'off')" aria-label="Проверка аккаунта"><i></i></label></div>` +
+      (on && mainAcc.id !== me.id ? `<button class="btn alt" style="margin-top:10px" onclick="setMainAcc()">Сделать основным ${esc(accName(me))}</button>` : '');
+  }
+  return h ? `<div class="card"><div class="lbl">Приложение</div>${h}</div>` : '';
 }
 function viewSettings() {
-  return `<a class="back" href="#" onclick="settings=false;render();return false">‹ Назад</a><h2>Настройки</h2>` + appCard() + foldersCard() + catsCard() + backupCard() + chatBkCard() +
+  return `<h2>Настройки</h2>` + appCard() + foldersCard() + catsCard() + backupCard() + chatBkCard() +
     `<div class="card"><div class="lbl">Где хранятся данные</div>` + (cloud
       ? `<div class="hint" style="margin-top:6px">Данные привязаны к твоему аккаунту Telegram и хранятся в облаке Telegram.</div>`
       : `<div class="hint" style="margin-top:6px;color:var(--amb)">Связь с Telegram не установлена — данные сейчас хранятся только на этом устройстве.</div><div class="hint" style="margin-top:6px">${!tg ? 'Не загрузился модуль Telegram (telegram-web-app.js). Открой приложение через кнопку бота; если не помогло — проверь интернет/VPN и обнови Telegram.' : !tg.initData ? 'Приложение открыто не через кнопку бота.' : 'Версия Telegram устарела (' + esc(tg.version || '?') + '), обнови приложение.'}</div>`) + `</div>` + resetCard();
@@ -1288,6 +1440,7 @@ function projCard(p, showF) {
     <div class="row"><span>${dot(colorOf(p.id))}<b>${esc(p.n)}</b></span>${p.c ? '<span class="badge done">закрыт</span>' : isW(p) ? '<span class="badge wait">в ожидании</span>' : '<span class="badge">в работе</span>'}</div>
     <div class="row" style="margin-top:10px">${p.u ? '<span style="color:var(--amb)">цена не указана</span>' : `<span class="num">${money(p.pr)}${!p.c && p.part ? ` <span class="hint">· получено ${money(paid(p))}</span>` : ''}</span>`}<span class="num" style="color:${s && !p.u && p.c ? 'var(--acc)' : 'var(--dim)'}">${s && !p.u && p.c ? money(rate(p)) + '/ч' : p.c ? '—' : ''}</span></div>
     <div class="hbar"><i style="width:${all ? done / all * 100 : 0}%;background:${colorOf(p.id)}"></i></div>
+    ${p.nt ? `<div class="hint" style="margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nt.split('\n')[0])}</div>` : ''}
     ${projTags(p).length ? `<div class="tags" style="margin-top:8px">${projTags(p).map(x => `<span class="tag" ${tagStyle(x.col)}>${esc(tagLabel(x))}</span>`).join('')}</div>` : ''}
     <div class="row hint" style="margin-top:6px"><span class="num">${fh(s)}${showF && folder(p.f) ? `</span><span>📁 ${esc(folder(p.f).n)}` : ''}</span><span class="num">задачи ${done}/${all}</span></div></button>`;
 }
@@ -1311,15 +1464,15 @@ function addCat(done) {
 function moveCat(id, d) { const a = cats().slice(), i = a.findIndex(c => c.id === id), j = i + d; if (i < 0 || j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; opt.tc = a; saveO(); render(); }
 async function delCat(id) {
   const c = cats().find(x => x.id === id), used = P.filter(p => p.t && p.t[id]).length;
-  if (!(await ask(`Удалить категорию «${c.n}»?${used ? `\n\nЕё значения пропадут у ${used} ${used === 1 ? 'проекта' : 'проектов'}.` : ''}`, 'Удалить', true))) return;
+  
   opt.tc = cats().filter(x => x.id !== id); P.forEach(p => { if (p.t && p.t[id]) delete p.t[id]; }); saveO(); if (used) saveP(); render();
 }
 function catsCard() {
   const dis = 'disabled style="opacity:.2"', a = cats();
   let h = `<div class="card"><div class="lbl" style="margin-bottom:4px">Категории тегов</div>`;
   h += a.length ? a.map((c, i) => `<div class="line">${ren === 'c:' + c.id ? renInput(c.n, 30)
-    : `<span>${opt.plainTags ? '' : `<button class="cdot" style="background:${catColor(c)}" onclick="cpkCat=cpkCat==='${c.id}'?null:'${c.id}';render()" aria-label="Цвет категории"></button>`}${esc(c.n)} <span class="hint num">${catValues(c.id).length}</span></span><span style="white-space:nowrap">
-      <button class="x" onclick="moveCat('${c.id}',-1)" ${i ? '' : dis} aria-label="Выше">↑</button><button class="x" onclick="moveCat('${c.id}',1)" ${i < a.length - 1 ? '' : dis} aria-label="Ниже">↓</button><button class="x" onclick="startRen('c:${c.id}')" aria-label="Переименовать">✎</button><button class="x" onclick="delCat('${c.id}')" aria-label="Удалить" style="color:var(--red)">✕</button></span>`}</div>${cpkCat === c.id && !opt.plainTags ? swatches(typeof c.cl === 'number' && c.cl >= 0 ? c.cl : 1, `setCatColor.bind(null,'${c.id}')`) + '<div style="height:8px"></div>' : ''}`).join('')
+    : `<span>${opt.plainTags ? '' : `<button class="cdot" style="background:${catColor(c)}" onclick="cpkCat=cpkCat==='${c.id}'?null:'${c.id}';render()" aria-label="Цвет категории"></button>`}<span onclick="startRen('c:${c.id}')" style="cursor:text">${esc(c.n)}</span> <span class="hint num">${catValues(c.id).length}</span></span><span style="white-space:nowrap">
+      <button class="x" onclick="moveCat('${c.id}',-1)" ${i ? '' : dis} aria-label="Выше">↑</button><button class="x" onclick="moveCat('${c.id}',1)" ${i < a.length - 1 ? '' : dis} aria-label="Ниже">↓</button><button class="x" onclick="delCat('${c.id}')" aria-label="Удалить" style="color:var(--red)">✕</button></span>`}</div>${cpkCat === c.id && !opt.plainTags ? swatches(typeof c.cl === 'number' && c.cl >= 0 ? c.cl : 1, `setCatColor.bind(null,'${c.id}')`) + '<div style="height:8px"></div>' : ''}`).join('')
     : '<div class="hint" style="padding:8px 0">Категорий пока нет. Каждая категория — отдельное поле при создании проекта.</div>';
   h += `<div class="inl" style="margin-top:8px"><input id="nc" placeholder="Название категории" maxlength="30" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();addCat(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="addCat()">Создать</button></div>`;
   return h + `<div class="row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Цветные теги<div class="hint">${opt.plainTags ? 'Выключено: теги нейтральные. Цвета сохранены — вернутся при включении.' : 'Теги окрашены в цвет своей категории'}</div></span>
@@ -1356,15 +1509,20 @@ function viewProjects() {
   h += `<div class="pager" id="pager"><div class="track" style="transform:translateX(${-fIdx * 100}%)">` + tabs.map((t, i) => `<section class="page">${projPage(list(t), t.id, newPOpen && i === fIdx)}</section>`).join('') + '</div></div>';
   return h;
 }
+let noteEd = null;
+function openNote(pid) { noteEd = pid; render(); const el = $('#note-' + pid); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
+function saveNote(pid, v) { const p = proj(pid); if (!p) return; p.nt = String(v).trim().slice(0, 1000); noteEd = null; saveP(); render(); }
 function viewProject(p) {
   const s = projSec(p.id), ts = T.filter(t => t.p === p.id).sort((a, b) => (!!a.d - !!b.d) || a.o - b.o), c = colorOf(p.id);
   const done = ts.filter(t => t.d).length;
-  let h = `<a class="back" href="#" onclick="cur=null;ren=null;render();return false">‹ ${folder(p.f) ? esc(folder(p.f).n) : 'Проекты'}</a>` +
+  let h = `` +
     (ren === 'p:' + p.id ? `<h2>${renInput(p.n, 80)}</h2>`
-      : `<h2>${dot(c)}${esc(p.n)} <button class="pen" onclick="startRen('p:${p.id}')">✎</button></h2>`) +
+      : `<h2 onclick="startRen('p:${p.id}')" style="cursor:text">${dot(c)}${esc(p.n)}</h2>`) +
+    (noteEd === p.id ? `<textarea id="note-${p.id}" class="note-ed" maxlength="1000" placeholder="Заметка к проекту" onblur="saveNote('${p.id}',this.value)">${esc(p.nt || '')}</textarea>`
+      : p.nt ? `<div class="note" onclick="openNote('${p.id}')">${esc(p.nt)}</div>` : `<button class="link" style="margin:0 0 8px;padding:0" onclick="openNote('${p.id}')">+ Заметка</button><br>`) +
     (p.c ? `<span class="badge done">закрыт ${fdate(p.c)}</span>` : isW(p) ? `<span class="badge wait">в ожидании с ${fdate(p.wt)}</span>` : '<span class="badge">в работе</span>') +
     (p.c || opt.noWait ? '' : `<div class="card row"><span>В ожидании</span><label class="tgl"><input type="checkbox" ${p.wt ? 'checked' : ''} onchange="setWait('${p.id}',this.checked)" aria-label="В ожидании"><i></i></label></div>`) +
-    `<div class="grid">${kpi('Время', hd(s) + ' ч', fh(s))}${kpi(p.c ? 'Итоговая ставка' : 'Ставка сейчас', s && !p.u ? money(rate(p)) : '—', p.u ? 'нужна цена' : p.c ? 'в час, итоговая' : 'в час, предварительная')}
+    `<div class="grid">${kpi('Время', fh(s), s ? hd(s) + ' ч' : '')}${kpi(p.c ? 'Итоговая ставка' : 'Ставка сейчас', s && !p.u ? money(rate(p)) : '—', p.u ? 'нужна цена' : p.c ? 'в час, итоговая' : 'в час, предварительная')}
       ${kpi('Стоимость', p.u ? '—' : money(p.pr), p.u ? 'не указана' : p.h.length ? 'доплат: ' + p.h.length : '')}${kpi('Задачи', done + '/' + ts.length, ts.length ? pct(done, ts.length) + '% готово' : '')}</div>
     ${cats().length || (p.g || []).length ? `<div class="card"><div class="lbl" style="margin-bottom:6px">Теги</div>${catFields('pt-' + p.id + '-', p)}${catLists()}
       ${(p.g || []).length ? `<div class="hint" style="margin:6px 0 6px">Без категории:</div><div class="tags">${tagChips(p.g, `delTag.bind(null,'${p.id}')`)}</div>` : ''}</div>` : ''}
@@ -1383,26 +1541,9 @@ function viewProject(p) {
       <input id="paid-${p.id}" type="text" inputmode="decimal" value="${p.pp || 0}" placeholder="0" onchange="setPaid('${p.id}',this.value)" class="num">
       ${p.pr > 0 ? `<div class="hbar" style="margin-top:0"><i style="width:${Math.min(100, paid(p) / p.pr * 100)}%;background:var(--acc)"></i></div>` : ''}
       <button class="btn alt" style="margin-top:10px" onclick="setPart('${p.id}',false)">Оплачено полностью</button></div>`}
-    <div class="card"><div class="row" style="margin-bottom:4px"><span class="lbl">Задачи</span>${ts.length > 1 ? `<button class="link" style="margin:0;padding:0;color:var(--acc)" onclick="ordP=ordP==='${p.id}'?null:'${p.id}';render()">${ordP === p.id ? 'Готово' : '⇅ Порядок'}</button>` : ''}</div>`;
+    <div class="card"><div class="row" style="margin-bottom:4px"><span class="lbl">Задачи</span>${ts.length > 1 ? `<button class="hact" onclick="ordP=ordP==='${p.id}'?null:'${p.id}';render()">${ordP === p.id ? 'Готово' : '⇅ Порядок'}</button>` : ''}</div>`;
   if (!ts.length) h += '<div class="hint" style="padding:8px 0">Пока нет задач</div>';
-  for (const t of ts) {
-    const es = E.filter(e => e.t === t.id).sort((a, b) => b.a - a.a), running = S && S.t === t.id, sec = taskSec(t.id);
-    h += `<div class="task ${t.d ? 'd' : ''}"><div class="row">` +
-      (ren === 't:' + t.id ? renInput(t.n, 100)
-        : `<span><span class="tn">${esc(t.n)}</span>${t.dd && !t.d ? ' ' + dueChip(t.dd) : ''}${t.st && !t.d ? ' <span style="color:var(--amb)">★</span>' : ''}<button class="pen" onclick="startRen('t:${t.id}')">✎</button></span><span style="white-space:nowrap">
-      ${ordP === p.id ? `<button class="ib" onclick="moveTask('${t.id}',-1)" aria-label="Выше">↑</button><button class="ib" onclick="moveTask('${t.id}',1)" aria-label="Ниже">↓</button></span>` : `<span class="hint num">${fh(sec)}</span>
-      ${!t.d && !p.c ? `<button class="ib play" onclick="go('${t.id}')">${running ? '●' : '▶'}</button>` : ''}
-      ${!p.c ? `<button class="ib" onclick="toggleTask('${t.id}')">${t.d ? '↺' : '✓'}</button>` : ''}</span>`}`) +
-      `</div><div class="hbar"><i style="width:${s ? sec / s * 100 : 0}%;background:${t.d ? 'var(--dim)' : c}"></i></div>
-      <details ${openT.has(t.id) ? 'open' : ''} ontoggle="this.open?openT.add('${t.id}'):openT.delete('${t.id}')"><summary>Время по задаче</summary>
-        ${es.map(e => editE === e.id ? `<div class="card" style="margin:6px 0;padding:12px;background:var(--s2)"><div class="hint" style="margin-bottom:4px">${e.w ? 'Отрезок из сессии ' + fdate(e.a) + ' ' + ftime(e.a) : 'Время, добавленное вручную'}</div>
-          <div class="inl"><input id="ed-${e.id}" type="date" value="${new Date(e.a * 1000).toLocaleDateString('sv')}" style="background:var(--s1)"><input id="em-${e.id}" ${hmAttrs} value="${hm(e.b - e.a)}" class="num" style="max-width:90px;background:var(--s1)"></div>
-          <div class="two"><button class="btn alt" style="background:var(--s1)" onclick="editE=null;render()">Отмена</button><button class="btn" onclick="saveEntry('${e.id}')">Сохранить</button></div>
-          <button class="btn del" onclick="delEntryE('${e.id}')">Удалить это время</button></div>`
-          : `<div class="line" onclick="editE='${e.id}';openT.add('${t.id}');render()" style="cursor:pointer"><span class="hint num">${fdate(e.a)} ${e.w ? ftime(e.a) + '–' + ftime(e.b) : '· вручную'}</span><span class="num">${fh(e.b - e.a)} <span class="pen">✎</span></span></div>`).join('') || '<div class="hint" style="padding:6px 0">Пусто</div>'}
-        <div class="inl"><input id="md-${t.id}" type="date" value="${new Date().toLocaleDateString('sv')}"><input id="mm-${t.id}" ${hmAttrs} placeholder="чч:мм" class="num" style="max-width:90px"><button class="btn sm alt" onclick="addManual('${t.id}')">+</button></div>
-        <button class="btn del" onclick="delTask('${t.id}')">Удалить задачу</button></details></div>`;
-  }
+  h += ts.map(t => todoRow(t, { ctx: 'proj', flat: true, ord: ordP === p.id })).join('');
   if (!p.c) h += `<div class="inl" style="margin-top:8px"><input id="nt-${p.id}" placeholder="Новая подзадача" maxlength="100" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newTask('${p.id}',false,this,true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newTask('${p.id}')">+</button></div>`;
   h += '</div>';
   h += p.c ? `<button class="btn alt" onclick="reopenProject('${p.id}')">Вернуть проект в работу</button>`
@@ -1504,9 +1645,29 @@ document.addEventListener('keydown', e => {
 }, true);
 window.addEventListener('resize', acPlace); if (window.visualViewport) visualViewport.addEventListener('resize', acPlace);
 document.addEventListener('scroll', e => { if (e.target !== acBox) acPlace(); }, true);
+/* ===== Основной аккаунт на этом устройстве (если у человека несколько аккаунтов Telegram) ===== */
+const me = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
+const accName = u => u ? (u.username ? '@' + u.username : [u.first_name, u.last_name].filter(Boolean).join(' ') || 'id ' + u.id) : '';
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const accOf = u => ({ id: u.id, n: accName(u) });
+let mainAcc = lsGet('st-main-acc'), accWarn = null;
+if (me) { if (!mainAcc) { mainAcc = accOf(me); lsSet('st-main-acc', mainAcc); } else if (mainAcc !== 'off' && mainAcc.id !== me.id) { accWarn = mainAcc; lsSet('st-multi-acc', 1); } else if (mainAcc !== 'off' && mainAcc.n !== accName(me)) { mainAcc = accOf(me); lsSet('st-main-acc', mainAcc); } }
+function setMainAcc(v) { mainAcc = v === 'off' ? 'off' : me ? accOf(me) : null; lsSet('st-main-acc', mainAcc); accWarn = null; render(); }
+function accScreen() {
+  return `<div style="min-height:80vh;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:20px 4px">
+    <div style="font-size:52px;margin-bottom:10px">👤</div>
+    <h2 style="margin:0 0 10px">Это не основной аккаунт</h2>
+    <div class="hint" style="font-size:15px;line-height:1.5">Приложение открыто через <b style="color:var(--tx)">${esc(accName(me))}</b>.<br>Твои данные — в аккаунте <b style="color:var(--acc)">${esc(accWarn.n)}</b>.<br><br>Переключись на него в Telegram и открой приложение снова.</div>
+    <div style="margin-top:26px"><button class="btn" onclick="tg.close()">Закрыть</button>
+    <button class="btn alt" onclick="accWarn=null;render()">Продолжить в этом аккаунте</button>
+    <button class="link" style="margin-top:14px" onclick="setMainAcc()">Сделать этот аккаунт основным</button></div></div>`;
+}
 function render() {
   acClose();
-  ['home', 'todo', 'proj', 'stat'].forEach(t => $('#n-' + t).classList.toggle('on', t === tab));
+  const nav = document.querySelector('nav'); if (nav) nav.style.display = accWarn ? 'none' : '';
+  if (accWarn) { $('#app').innerHTML = accScreen(); return; }
+  ['home', 'todo', 'proj', 'stat'].forEach(t => $('#n-' + t).classList.toggle('on', t === tab)); placePill();
   const p = cur && proj(cur);
   $('#app').innerHTML = settings ? viewSettings() : gearBtn() + (tab === 'home' ? viewHome() : tab === 'todo' ? viewTodo() : tab === 'stat' ? viewStats() : p ? viewProject(p) : viewProjects());
   const key = settings ? 'settings' : tab + (p ? p.id : ''); if (key !== render.k) { $('#app').scrollTop = 0; render.k = key; }
@@ -1515,7 +1676,8 @@ function render() {
   const on = $('.ftab.on'), bar = $('.ftabs'); if (on && bar) bar.scrollLeft = on.offsetLeft - bar.clientWidth / 2 + on.clientWidth / 2;
   const ri = $('#ren'); if (ri) { ri.focus(); ri.select(); }
 }
-if (V('6.1')) tg.BackButton.onClick(() => { if (settings) settings = false; else { cur = null; ren = null; } render(); });
+function goBack() { if (settings) settings = false; else { cur = null; ren = null; tEdit = null; } render(); }
+if (V('6.1')) tg.BackButton.onClick(goBack);
 
 setInterval(() => {
   if (!S) return;
@@ -1538,7 +1700,7 @@ function showErr(m) {
 }
 window.addEventListener('error', e => showErr(e.message || 'неизвестная'));
 window.addEventListener('unhandledrejection', e => showErr((e.reason && e.reason.message) || String(e.reason)));
-initSwipe();
+initSwipe(); initPill();
 load().then(async () => { if (opt.full !== false) setFull(true); try { if (mobile && V('8.0')) tg.lockOrientation(); } catch {} render(); autoBackup(); }).catch(e => { $('#app').innerHTML = '<div class="card">Не удалось загрузить данные: ' + esc((e && e.message) || e) + '</div>'; });
 </script>
 </body>

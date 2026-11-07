@@ -152,6 +152,22 @@ details.cdet summary .dot{margin:0 10px 0 auto}
 .star{border:0;background:none;color:var(--dim);font-size:19px;padding:4px 2px;line-height:1}.star.on{color:var(--amb)}
 .ted{position:relative;background:var(--s1);border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;padding:4px 12px 12px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:4px -16px 8px;padding:0 16px}
+.chips.hs::-webkit-scrollbar{display:none}
+.chips.hs button{white-space:nowrap;flex:none}
+.ntdue{max-height:0;opacity:0;overflow:hidden;margin:0;transition:max-height .28s ease,opacity .2s ease,margin .28s ease}
+.ntdue.on{max-height:90px;opacity:1;margin:6px 0 14px}
+.chips.sug{display:none;margin:-2px 0 10px}
+.chips.sug.on{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.chips.sug::-webkit-scrollbar{display:none}
+.chips.sug button{display:flex;gap:6px;align-items:baseline;flex:none;white-space:nowrap}
+.addf input,.addf select{background:var(--s1)}
+.chips label{border:1px solid var(--line);background:var(--s2);color:var(--tx);font-size:13px;padding:7px 11px;border-radius:10px;overflow:hidden}
+.chips label.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
+.trow.flash .tfg{animation:flash 1.6s ease-out}
+@keyframes flash{0%,30%{box-shadow:0 0 0 2px var(--acc)}100%{box-shadow:0 0 0 0 transparent}}
+#t2{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;background:#26262d;border:1px solid var(--line);color:var(--tx);font-size:14px;padding:9px 16px;border-radius:12px;z-index:61;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap}
+#t2.on{opacity:1;transform:translate(-50%,0)}
 .chips button{border:1px solid var(--line);background:var(--s2);color:var(--tx);font:inherit;font-size:13px;padding:7px 11px;border-radius:10px}
 .chips button.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
 .tgrp{margin:18px 0 2px 4px;display:flex;justify-content:space-between}
@@ -330,6 +346,7 @@ async function load() {
   P.sort((x, y) => x.cr - y.cr); F.sort((x, y) => x.cr - y.cr);
   if (fixColors()) saveP();
   if (fixCatColors()) saveO();
+  fixOldSeams();
   if (F.some(f => !(f.cl >= 0))) { F.forEach((f, i) => { if (!(f.cl >= 0)) f.cl = i % 8; }); saveF(); }
   if (fixOrder()) saveT();
 }
@@ -522,11 +539,16 @@ function taskEditor(t, ctx) {
     <input type="date" value="${t.dd || ''}" onchange="todoDue('${t.id}',this.value)">`}
     <div class="lbl" style="margin:8px 0 2px 2px">Время по задаче · ${fh(taskSec(t.id))}</div>
     ${es.map(e => editE === e.id ? `<div class="card" style="margin:6px 0;padding:12px;background:var(--s2)"><div class="hint" style="margin-bottom:4px">${e.w ? 'Отрезок из сессии ' + fdate(e.a) + ' ' + ftime(e.a) : 'Время, добавленное вручную'}</div>
-        <div class="inl"><input id="ed-${e.id}" type="date" value="${new Date(e.a * 1000).toLocaleDateString('sv')}" style="background:var(--s1)"><input id="em-${e.id}" ${hmAttrs} value="${hm(e.b - e.a)}" class="num" style="max-width:90px;background:var(--s1)"></div>
+        <input id="ed-${e.id}" type="date" value="${new Date(e.a * 1000).toLocaleDateString('sv')}" style="background:var(--s1)">
+        <div class="inl"><span class="hint">с</span><input id="es-${e.id}" type="time" value="${ftime(e.a)}" style="background:var(--s1)" onfocus="timeSug('e:${e.id}','s')" onblur="hideSug('e:${e.id}')"><span class="hint">по</span><input id="ee-${e.id}" type="time" value="${ftime(e.b)}" style="background:var(--s1)" onfocus="timeSug('e:${e.id}','e')" onblur="hideSug('e:${e.id}')"></div>
+        <div class="chips sug" id="sg-e:${e.id}"></div>
         <div class="two"><button class="btn alt" style="background:var(--s1)" onclick="editE=null;render()">Отмена</button><button class="btn" onclick="saveEntry('${e.id}')">Сохранить</button></div>
         <button class="btn del" onclick="delEntryE('${e.id}')">Удалить это время</button></div>`
-      : `<div class="line" onclick="editE='${e.id}';render()" style="cursor:pointer"><span class="hint num">${fdate(e.a)} ${e.w ? ftime(e.a) + '–' + ftime(e.b) : '· вручную'}</span><span class="num">${fh(e.b - e.a)}</span></div>`).join('') || '<div class="hint" style="padding:6px 2px">Пока нет</div>'}
-    <div class="inl"><input id="md-${t.id}" type="date" value="${new Date().toLocaleDateString('sv')}"><input id="mm-${t.id}" ${hmAttrs} placeholder="чч:мм" class="num" style="max-width:90px"><button class="btn sm alt" onclick="addManual('${t.id}')">+</button></div>
+      : `<div class="line" onclick="editE='${e.id}';render()" style="cursor:pointer"><span class="hint num">${fdate(e.a)} ${ftime(e.a)}–${ftime(e.b)}${e.w ? '' : ' · вручную'}</span><span class="num">${fh(e.b - e.a)}</span></div>`).join('') || '<div class="hint" style="padding:6px 2px">Пока нет</div>'}
+    <div class="lbl" style="margin:8px 0 0 2px">Добавить время</div>
+    <input id="md-${t.id}" type="date" value="${new Date().toLocaleDateString('sv')}">
+    <div class="inl"><span class="hint">с</span><input id="ms-${t.id}" type="time" onfocus="timeSug('m:${t.id}','s')" onblur="hideSug('m:${t.id}')"><span class="hint">по</span><input id="me-${t.id}" type="time" onfocus="timeSug('m:${t.id}','e')" onblur="hideSug('m:${t.id}')"><button class="btn sm alt" onclick="addManual('${t.id}')">+</button></div>
+    <div class="chips sug" id="sg-m:${t.id}"></div>
     ${others.length || t.p ? `<div class="lbl" style="margin:8px 0 0 2px">Перенести</div><select onchange="todoMove('${t.id}',this.value)"><option value="">— ${p ? 'в другой проект' : 'в проект'} —</option>${t.p ? '<option value="-">Без проекта</option>' : ''}${others.map(x => `<option value="${x.id}">${esc(x.n)}${folder(x.f) ? ' · ' + esc(folder(x.f).n) : ''}</option>`).join('')}</select>` : ''}
     ${p && ctx !== 'proj' ? `<button class="btn alt" onclick="cur='${p.id}';tab='proj';settings=false;tEdit=null;render()">Открыть проект «${esc(p.n)}»</button>` : ''}
     <button class="btn del" onclick="delTask('${t.id}')">Удалить задачу</button>
@@ -541,8 +563,9 @@ function viewTodo() {
   const all = T.filter(t => todoVisible(t) && (tfMode === 'all' || (tfMode === 'own' ? t.p === '' : t.p !== '')));
   const open = all.filter(t => !t.d), g = todoGroups(open);
   let h = `<h2>Задачи</h2>
-    <div class="inl"><input id="nt-todo" placeholder="Новое дело" maxlength="100" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();newTodo(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newTodo()">+</button></div>
-    <div class="ftabs" style="margin-top:6px">${[['all', 'Все'], ['own', 'Без проекта'], ['proj', 'Из проектов']].map(([m, n]) => `<button class="ftab ${tfMode === m ? 'on' : ''}" onclick="tfMode='${m}';tEdit=null;render()">${n}<span>${T.filter(t => !t.d && todoVisible(t) && (m === 'all' || (m === 'own' ? t.p === '' : t.p !== ''))).length}</span></button>`).join('')}</div>`;
+    <div class="inl"><input id="nt-todo" placeholder="Новое дело" maxlength="100" enterkeyhint="done" onfocus="ntDueShow(true)" onblur="ntDueShow(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();newTodo(true)}"><button class="btn sm" onpointerdown="event.preventDefault()" onclick="newTodo()">+</button></div>
+    <div class="ntdue" id="nt-wrap"><div class="lbl" style="margin:0 0 6px 2px">Срок</div><div class="chips" id="nt-due" style="margin:0">${ntDueChips()}</div></div>
+    <div class="ftabs" style="margin-top:10px">${[['all', 'Все'], ['own', 'Без проекта'], ['proj', 'Из проектов']].map(([m, n]) => `<button class="ftab ${tfMode === m ? 'on' : ''}" onclick="tfMode='${m}';tEdit=null;render()">${n}<span>${T.filter(t => !t.d && todoVisible(t) && (m === 'all' || (m === 'own' ? t.p === '' : t.p !== ''))).length}</span></button>`).join('')}</div>`;
   h += '<div id="swp">';
   const sec = (key, title, color) => g[key].length ? `<div class="tgrp"><span class="lbl" ${color ? `style="color:${color}"` : ''}>${title}</span><span class="hint num">${g[key].length}</span></div>` + g[key].map(t => todoRow(t)).join('') : '';
   h += sec('over', 'Просрочено', 'var(--red)') + sec('today', 'Сегодня', 'var(--acc)') + sec('tom', 'Завтра') + sec('later', 'Скоро') + sec('none', 'Без срока');
@@ -567,12 +590,36 @@ function inboxPick() {
   return `<div class="card"><div class="row" style="margin-bottom:6px"><span>${dot('#7f8aa3')}<b>Дела без проекта</b></span></div>` +
     list.slice(0, 8).map(t => todoRow(t, { ctx: 'pick', flat: true })).join('') + '</div>';
 }
+// срок для нового дела — выбирается до добавления и запоминается для следующих
+let ntDue = '';
+function ntDueChips() {
+  const k = ntDue ? dayDiff(ntDue) : null, other = ntDue && k !== 0 && k !== 1;
+  return `<button class="${!ntDue ? 'on' : ''}" onpointerdown="event.preventDefault()" onclick="setNtDue('')">Без срока</button>` +
+    `<button class="${k === 0 ? 'on' : ''}" onpointerdown="event.preventDefault()" onclick="setNtDue(isoAdd(0))">Сегодня</button>` +
+    `<button class="${k === 1 ? 'on' : ''}" onpointerdown="event.preventDefault()" onclick="setNtDue(isoAdd(1))">Завтра</button>` +
+    `<label class="${other ? 'on' : ''}" style="position:relative">📅 ${other ? dueLabel(ntDue) : 'Дата'}<input type="date" value="${ntDue || ''}" onblur="ntDueShow(false)" onchange="setNtDue(this.value);const n=$('#nt-todo');if(n)n.focus()" style="position:absolute;inset:0;opacity:0;margin:0;padding:0;min-height:0"></label>`;
+}
+// подсказки срока видны, только пока вводишь название дела
+function ntDueShow(on) {
+  const w = $('#nt-wrap'); if (!w) return;
+  if (on) return w.classList.add('on');
+  setTimeout(() => { const a = document.activeElement; if (!a || !(a.id === 'nt-todo' || w.contains(a))) w.classList.remove('on'); }, 120);
+}
+function setNtDue(v) { ntDue = v || ''; const c = $('#nt-due'); if (c) c.innerHTML = ntDueChips(); }
 function newTodo(done) {
   const el = $('#nt-todo'), n = el.value.trim(); if (!n) return done ? el.blur() : el.focus();
-  T.push({ id: uid(), p: '', n: n.slice(0, 100), d: 0, dd: '', st: 0, o: nextO() }); saveT();
+  const t = { id: uid(), p: '', n: n.slice(0, 100), d: 0, dd: ntDue, st: 0, o: nextO() }; T.push(t); saveT();
   if (tfMode === 'proj') tfMode = 'all';
-  if (done) { el.blur(); render(); return; }
-  render(); const e2 = $('#nt-todo'); if (e2) e2.focus();
+  if (done) el.blur();
+  render();
+  // подсветить новое дело, чтобы оно не потерялось в списке
+  const row = document.querySelector(`.trow[data-id="${t.id}"]`); if (row) { row.classList.add('flash'); if (done) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  if (!done) { const e2 = $('#nt-todo'); if (e2) e2.focus(); }
+  toast2(`Добавлено${t.dd ? ' · ' + dueLabel(t.dd) : ''}`);
+}
+function toast2(msg) { // короткая всплывашка без кнопок
+  let el = $('#t2'); if (!el) { el = document.createElement('div'); el.id = 't2'; document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add('on'); clearTimeout(toast2.t); toast2.t = setTimeout(() => el.classList.remove('on'), 1600);
 }
 function todoDone(id) {
   const t = task(id); if (!t || (proj(t.p) && proj(t.p).c)) return render(); t.d = t.d ? 0 : now();
@@ -725,7 +772,7 @@ function initSwipe() {
     if ((settings || (tab === 'proj' && cur)) && t.clientX < 28 && e.touches.length === 1) { mode = 'b'; el = app; x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); return; }
     el = !settings && (tab === 'stat' || (tab === 'todo' && !tEdit)) && !statAnim ? $('#swp') : null;
     mode = tr ? 'p' : el ? 's' : null;
-    if (e.touches.length > 1 || e.target.closest('.ftabs,textarea,input,select,.cpk')) { lock = 'n'; return; }
+    if (e.touches.length > 1 || e.target.closest('.ftabs,textarea,input,select,.cpk,.hs')) { lock = 'n'; return; }
     if (!mode) { lock = 'n'; return; }
     x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
   }, { passive: true });
@@ -820,28 +867,68 @@ async function delProject(pid) {
   E = E.filter(e => !ids.has(e.t)); T = T.filter(t => t.p !== pid); P = P.filter(x => x.id !== pid);
   saveP(); saveT(); months.forEach(saveM); cur = null; render();
 }
+// память о том, как сессию расширяли ради задачи (чтобы при удалении задачи предложить вернуть рамки)
+const extMem = (() => { try { return JSON.parse(localStorage.getItem('st-ext') || '{}'); } catch { return {}; } })();
+function memExt(eid, w0) { extMem[eid] = [w0.a, w0.b]; try { localStorage.setItem('st-ext', JSON.stringify(extMem)); } catch {} }
 async function delEntry(id) {
-  const e = E.find(x => x.id === id); 
+  const e = E.find(x => x.id === id);
   E = E.filter(x => x.id !== id); saveM(ymOf(e.a)); render();
+  const mem = extMem[id], w = e.w && W.find(x => x.id === e.w);
+  if (!mem || !w) return;
+  delete extMem[id]; try { localStorage.setItem('st-ext', JSON.stringify(extMem)); } catch {}
+  const rest = E.filter(x => x.w === w.id), ks = w.k || [];
+  const lastEnd = Math.max(mem[1], ...rest.map(x => x.b), ...ks.map(k => k[1])), firstStart = Math.min(mem[0], ...rest.map(x => x.a), ...ks.map(k => k[0]));
+  const nb = lastEnd < w.b - 59 ? lastEnd : w.b, na = firstStart > w.a + 59 ? firstStart : w.a;
+  if (nb === w.b && na === w.a) return;
+  const what = na !== w.a && nb !== w.b ? `сессию обратно: ${ftime(na)}–${ftime(nb)}` : nb !== w.b ? `конец сессии обратно на ${ftime(nb)}` : `начало сессии обратно на ${ftime(na)}`;
+  if (!(await modal(`Сессию расширяли ради этой задачи. Сдвинуть ${what}?`, [{ t: 'Оставить', v: false }, { t: 'Сдвинуть', v: true }]))) return;
+  const oldYm = ymOf(w.a); w.a = na; w.b = nb; saveW(oldYm); if (ymOf(na) !== oldYm) saveW(ymOf(na)); render();
 }
 let editE = null; const openT = new Set();
-function saveEntry(id) {
-  const e = E.find(x => x.id === id); if (!e) return;
-  const d = $('#ed-' + id).value, m = parseHM($('#em-' + id).value);
-  if (!d || !(m > 0)) return toast('Укажи дату и время в формате чч:мм, например 1:30');
-  const oldYm = ymOf(e.a), t0 = new Date(e.a * 1000);
-  const a = Math.floor(new Date(d + 'T' + (e.w ? String(t0.getHours()).padStart(2, '0') + ':' + String(t0.getMinutes()).padStart(2, '0') : '12:00') + ':00').getTime() / 1000);
-  e.a = a; e.b = a + Math.round(m * 60); editE = null;
-  saveM(oldYm); if (ymOf(a) !== oldYm) saveM(ymOf(a)); render();
+// дата + «с» + «по» → [a, b] (если конец раньше начала — значит, через полночь)
+function spanOf(d, sv, ev) {
+  if (!d || !sv || !ev) return null;
+  const base = Math.floor(new Date(d + 'T12:00:00').getTime() / 1000), a = atTime(base, sv); let b = atTime(base, ev);
+  if (b <= a) b += 86400; return [a, b];
 }
+async function saveEntry(id) {
+  const e = E.find(x => x.id === id); if (!e) return;
+  const sp = spanOf($('#ed-' + id).value, $('#es-' + id).value, $('#ee-' + id).value);
+  if (!sp) return toast('Укажи дату, начало и конец');
+  const w = e.w && (W.find(x => x.id === e.w) || liveW(e.w));
+  if (w) sp.splice(0, 2, ...snapSpan(e.w, sp[0], sp[1], e.id));
+  const w0 = w && { a: w.a, b: w.b };
+  if (w && !(await fitSession(w, sp[0], sp[1]))) return;
+  if (w) { const w1 = W.find(x => x.id === e.w); if (w1 && (w1.a !== w0.a || w1.b !== w0.b) && !extMem[e.id]) memExt(e.id, w0); }
+  const oldYm = ymOf(e.a); [e.a, e.b] = sp; editE = null;
+  saveM(oldYm); if (ymOf(e.a) !== oldYm) saveM(ymOf(e.a)); seamNote(fixSeams(e)); render();
+}
+// подсказки времени: начало/конец сессии и границы соседних задач в этот день
+function timeSug(key, kind) {
+  const box = document.getElementById('sg-' + key); if (!box) return;
+  const [pre, id] = key.split(':'), e = pre === 'e' ? E.find(x => x.id === id) : null;
+  const d = $((pre === 'e' ? '#ed-' : '#md-') + id).value; if (!d) return;
+  const d0 = Math.floor(new Date(d + 'T00:00:00').getTime() / 1000), d1 = d0 + 86400;
+  const ws = W.filter(w => w.a < d1 && w.b > d0 && (!e || !e.w || w.id === e.w)).concat(S && S.w.a < d1 && (!e || !e.w || e.w === S.w.id) ? [{ id: S.w.id, a: S.w.a, b: now(), live: 1 }] : []);
+  const others = allE().filter(x => x.a < d1 && x.b > d0 && (!e || x.id !== e.id));
+  const sIn = $((pre === 'e' ? '#es-' : '#ms-') + id).value, from = sIn ? atTime(d0 + 43200, sIn) : 0;
+  let c = [];
+  if (kind === 's') { ws.forEach(w => c.push([w.a, 'начало сессии'])); others.forEach(x => c.push([x.b, 'после «' + tname(x.t) + '»'])); }
+  else { ws.forEach(w => c.push([w.b, w.live ? 'сейчас' : 'конец сессии'])); others.forEach(x => { if (!from || x.a > from) c.push([x.a, 'до «' + tname(x.t) + '»']); }); }
+  const seen = new Set(); c = c.sort((x, y) => x[0] - y[0]).filter(([t]) => { const k = ftime(t); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+  box.innerHTML = c.length ? c.map(([t, l]) => `<button onpointerdown="event.preventDefault()" onclick="setSug('${key}','${kind}','${ftime(t)}')"><b class="num">${ftime(t)}</b> <span class="hint">${esc(l)}</span></button>`).join('') : '';
+  box.classList.toggle('on', c.length > 0);
+}
+function setSug(key, kind, v) { const [pre, id] = key.split(':'), el = $('#' + (pre === 'e' ? (kind === 's' ? 'es-' : 'ee-') : (kind === 's' ? 'ms-' : 'me-')) + id); el.value = v; el.blur(); hideSug(key, true); }
+function hideSug(key, now0) { const f = () => { const b = document.getElementById('sg-' + key), a = document.activeElement, id = key.split(':')[1]; if (b && !b.contains(a) && !(a && a.id && a.id.endsWith('-' + id) && a.type === 'time')) b.classList.remove('on'); }; now0 ? f() : setTimeout(f, 150); }
 async function delEntryE(id) { await delEntry(id); editE = null; render(); }
 function addManual(tid) {
-  const d = $('#md-' + tid).value, m = parseHM($('#mm-' + tid).value);
-  if (!d || !(m > 0)) return toast('Укажи дату и время в формате чч:мм, например 1:30');
-  const a = Math.floor(new Date(d + 'T12:00:00').getTime() / 1000);
-  E.push({ id: uid(), t: tid, a, b: a + Math.round(m * 60), w: null }); saveM(ymOf(a)); tEdit = tid; render();
+  const sp = spanOf($('#md-' + tid).value, $('#ms-' + tid).value, $('#me-' + tid).value);
+  if (!sp) return toast('Укажи дату, начало и конец');
+  const [a, b] = sp, w = W.find(x => x.a <= a && x.b >= b);
+  E.push({ id: uid(), t: tid, a, b, w: w ? w.id : null }); saveM(ymOf(a)); tEdit = tid; render();
 }
-let editW = null, addW = false;
+let editW = null, addW = false, addEF = null, addBF = null;
 const atTime = (base, hm) => { const d = new Date(base * 1000), [hh, mm] = hm.split(':').map(Number); d.setHours(hh, mm, 0, 0); return Math.floor(d.getTime() / 1000); };
 function saveShiftTimes(id) {
   const w = W.find(x => x.id === id), sv = $('#ws-' + id).value, ev = $('#we-' + id).value; if (!w || !sv || !ev) return;
@@ -856,41 +943,79 @@ function setEntryMin(eid, v) {
 }
 // отрезок «с … по …» внутри сессии (сессия могла перейти через полночь)
 function spanIn(w, sv, ev) {
-  let a = atTime(w.a, sv), b = atTime(w.a, ev);
-  if (a < w.a - 60) { a += 86400; b += 86400; }
-  if (b <= a) b += 86400;
+  let a = atTime(w.a, sv);
+  if (a < w.a - 60 && a + 86400 < w.b + 60) a += 86400; // сессия через полночь
+  let b = atTime(a, ev); if (b <= a) b += 86400;
   return [a, b];
 }
+// задача выходит за рамки сессии → предложить сдвинуть начало/конец сессии
+async function fitSession(w, a, b) {
+  const live = S && S.w.id === w.id, wb = live ? now() : w.b;
+  if (a >= w.a - 60 && b <= wb + 60) return true;
+  if (live && b > now() + 60) { toast('Конец задачи не может быть позже, чем сейчас — сессия ещё идёт'); return false; }
+  const na = Math.min(w.a, a), nb = live ? wb : Math.max(w.b, b);
+  const sa = na < w.a, sb = nb > w.b && !live;
+  const what = sa && sb ? `сессию: начало на ${ftime(na)}, конец на ${ftime(nb)}` : sa ? `начало сессии на ${ftime(na)}` : `конец сессии на ${ftime(nb)}`;
+  const ok = await modal(`Задача (${ftime(a)}–${ftime(b)}) выходит за рамки сессии (${ftime(w.a)}–${live ? 'сейчас' : ftime(w.b)}).\nСдвинуть ${what}?`,
+    [{ t: 'Отмена', v: false }, { t: 'Сдвинуть', v: true }]);
+  if (!ok) return false;
+  if (live) { S.w.a = na; saveS(); return true; }
+  const W0 = W.find(x => x.id === w.id), oldYm = ymOf(W0.a); W0.a = na; W0.b = nb; saveW(oldYm); if (ymOf(na) !== oldYm) saveW(ymOf(na));
+  return true;
+}
+function snapSpan(wid, a, b, skip) {
+  const w = W.find(x => x.id === wid) || liveW(wid), es = allE().filter(x => x.w === wid && x.id !== skip);
+  const near = (t, list) => { const m = list.filter(x => Math.abs(x - t) < 60).sort((x, y) => Math.abs(x - t) - Math.abs(y - t))[0]; return m ?? t; };
+  return [near(a, es.map(x => x.b).concat(w ? [w.a] : [])), near(b, es.map(x => x.a).concat(w ? [w.b] : []))];
+}
+// стыки: время одной задачи не может пересекаться с другой в той же сессии — соседей подрезаем
+function fixSeams(e) {
+  const moved = [], ms = new Set();
+  allE().filter(x => x.id !== e.id && x.w === e.w && x.a < e.b && x.b > e.a).forEach(x => {
+    if (x.a >= e.a && x.b > e.b) { ms.add(ymOf(x.a)); x.a = e.b; moved.push(x); }
+    else if (x.b <= e.b && x.a < e.a) { ms.add(ymOf(x.a)); x.b = e.a; moved.push(x); }
+  });
+  ms.forEach(saveM); return moved;
+}
+// при загрузке: убрать мелкие нахлёсты (до 2 минут) между соседними задачами в одной сессии
+function fixOldSeams() {
+  const by = {}, ms = new Set(); allE().forEach(e => { if (e.w) (by[e.w] = by[e.w] || []).push(e); });
+  Object.values(by).forEach(list => { list.sort((x, y) => x.a - y.a); for (let i = 1; i < list.length; i++) { const p = list[i - 1], c = list[i]; if (c.a < p.b && p.b - c.a <= 120 && c.b > p.b) { c.a = p.b; ms.add(ymOf(c.a)); } } });
+  ms.forEach(saveM);
+}
 const liveW = wid => S && S.w.id === wid ? { id: wid, a: S.w.a, b: now(), k: [] } : null;
-function addShiftEntry(wid) {
+async function addShiftEntry(wid) {
   const w = W.find(x => x.id === wid) || liveW(wid), sel = $('#wt-' + wid).value, sv = $('#wf-' + wid).value, ev = $('#wto-' + wid).value;
   if (!w || !sel) return toast('Сначала создай проект');
   if (!sv || !ev) return toast('Укажи, с какого и по какое время шла задача');
-  const [a, b] = spanIn(w, sv, ev);
-  if (a < w.a || b > w.b + 60) return toast(`Время задачи должно быть внутри сессии: ${ftime(w.a)}–${S && S.w.id === wid ? 'сейчас' : ftime(w.b)}`);
+  const [a, b] = snapSpan(wid, ...spanIn(w, sv, ev)), w0 = { a: w.a, b: w.b };
+  if (!(await fitSession(w, a, b))) return;
   let tid;
   if (sel.startsWith('p:')) {
     const n = $('#wn-' + wid).value.trim(); if (!n) return toast('Впиши название новой задачи');
     const t = { id: uid(), p: sel.slice(2), n, d: 0 }; T.push(t); saveT(); tid = t.id;
   } else tid = sel.slice(2);
-  const end = Math.min(b, Math.max(w.b, now())), dn = $('#wd-' + wid) && $('#wd-' + wid).checked, tk = task(tid);
-  E.push({ id: uid(), t: tid, a, b: end, w: wid }); saveM(ymOf(a));
+  const dn = $('#wd-' + wid) && $('#wd-' + wid).checked, tk = task(tid), end = S && S.w.id === wid ? Math.min(b, now()) : b;
+  const ne = { id: uid(), t: tid, a, b: end, w: wid }; E.push(ne); saveM(ymOf(a)); seamNote(fixSeams(ne));
+  const w1 = W.find(x => x.id === wid); if (w1 && (w1.a !== w0.a || w1.b !== w0.b)) memExt(ne.id, w0);
   if (tk && !!tk.d !== !!dn) { tk.d = dn ? end : 0; if (dn) releaseIfIn(x => x === tid); saveT(); }
-  liveAdd = false; render();
+  liveAdd = false; addEF = null; render();
   if (dn && tk) askCloseIfDone(tk.p);
 }
-function setEntryTimes(eid, wid) {
+async function setEntryTimes(eid, wid) {
   const e = E.find(x => x.id === eid), w = W.find(x => x.id === wid) || liveW(wid), sv = $('#ef-' + eid).value, ev = $('#et-' + eid).value;
   if (!e || !w || !sv || !ev) return;
-  const [a, b] = spanIn(w, sv, ev), oldYm = ymOf(e.a);
-  if (a < w.a || b > w.b + 60) { toast('Время задачи должно быть внутри сессии'); return render(); }
-  e.a = a; e.b = b; saveM(oldYm); if (ymOf(a) !== oldYm) saveM(ymOf(a)); render();
+  const [a, b] = snapSpan(wid, ...spanIn(w, sv, ev), eid), oldYm = ymOf(e.a), w0 = { a: w.a, b: w.b };
+  if (!(await fitSession(w, a, b))) return render();
+  { const w1 = W.find(x => x.id === wid); if (w1 && (w1.a !== w0.a || w1.b !== w0.b) && !extMem[eid]) memExt(eid, w0); }
+  e.a = a; e.b = b; saveM(oldYm); if (ymOf(a) !== oldYm) saveM(ymOf(a)); seamNote(fixSeams(e)); render();
 }
+function seamNote(moved) { if (moved.length) toast2(moved.length === 1 ? `«${tname(moved[0].t)}» подвинута до стыка: ${ftime(moved[0].a)}–${ftime(moved[0].b)}` : `Подвинуто соседних задач: ${moved.length}`); }
 // форма «задача с … по …» (для прошедшей и для текущей сессии)
-function entryForm(wid, from) {
+function entryForm(wid, from, until) { // from — конец последней задачи; until — конец сессии (или «сейчас»)
   return `<select id="wt-${wid}" onchange="document.getElementById('wn-${wid}').style.display=this.value.startsWith('p:')?'block':'none';document.getElementById('wd-${wid}').checked=this.value.startsWith('t:')&&!!(task(this.value.slice(2))||{}).d">${taskOptions()}</select>
     <input id="wn-${wid}" placeholder="Название новой задачи" maxlength="100" style="display:${P.length && !T.length ? 'block' : 'none'}">
-    <div class="inl"><span class="hint">с</span><input id="wf-${wid}" type="time" value="${ftime(from)}"><span class="hint">по</span><input id="wto-${wid}" type="time" value="${ftime(Math.min(from + 3600, Math.max(from, now())))}"></div>
+    <div class="inl"><span class="hint">с</span><input id="wf-${wid}" type="time" value="${ftime(from)}"><span class="hint">по</span><input id="wto-${wid}" type="time" value="${ftime(until > from + 60 ? Math.min(from + 3600, until) : from + 1800)}"></div>
     <div class="row" style="margin:2px 0 8px"><span>Задача выполнена<div class="hint">Выключено — сделана не до конца, останется в работе</div></span>
       <label class="tgl"><input id="wd-${wid}" type="checkbox" aria-label="Задача выполнена"><i></i></label></div>
     <button class="btn" onclick="addShiftEntry('${wid}')">Добавить задачу</button>`;
@@ -900,7 +1025,7 @@ function liveAddHTML() {
   if (!S) return '';
   const last = Math.max(S.w.a, ...E.filter(e => e.w === S.w.id).map(e => e.b));
   return liveAdd ? `<div class="card"><div class="row"><span class="lbl">Задача, которую уже сделал</span><button class="x" onclick="liveAdd=false;render()">✕</button></div>
-      <div class="hint" style="margin:4px 0 6px">Внутри этой сессии: с ${ftime(S.w.a)} до сейчас</div>${entryForm(S.w.id, Math.min(last, now() - 60))}</div>`
+      <div class="hint" style="margin:4px 0 6px">Внутри этой сессии: с ${ftime(S.w.a)} до сейчас</div>${entryForm(S.w.id, last, now())}</div>`
     : `<button class="link" style="display:block;margin:2px auto 10px" onclick="liveAdd=true;render()">+ Добавить задачу, которую уже сделал</button>`;
 }
 function setBreakMin(wid, i, v) { const w = W.find(x => x.id === wid), m = parseHM(v); if (w && w.k[i] && m > 0) { w.k[i][1] = w.k[i][0] + Math.round(m * 60); saveW(ymOf(w.a)); } render(); }
@@ -910,7 +1035,7 @@ function addBreak(wid) {
   if (!(m > 0)) return toast('Укажи длительность перерыва в формате чч:мм, например 0:15');
   const dur = Math.round(m * 60), last = Math.max(w.a, ...E.filter(e => e.w === wid).map(e => e.b), ...(w.k || []).map(k => k[1]));
   const a = last + dur <= w.b ? last : Math.max(w.a, w.b - dur);
-  (w.k = w.k || []).push([a, a + dur]); w.k.sort((x, y) => x[0] - y[0]); saveW(ymOf(w.a)); render();
+  (w.k = w.k || []).push([a, a + dur]); w.k.sort((x, y) => x[0] - y[0]); saveW(ymOf(w.a)); addBF = null; render();
 }
 function addPastShift() {
   const d = $('#aw-d').value, sv = $('#aw-s').value, ev = $('#aw-e').value, live = $('#aw-live') && $('#aw-live').checked;
@@ -1250,7 +1375,7 @@ function shiftCard(w, editable) {
     <div class="row" style="margin-top:8px"><span class="big" style="font-size:24px">${fh(s.dur)}</span><span class="num"><b style="color:var(--acc)">${p}%</b> <span class="hint">в задачах</span></span></div>
     <div class="tl">${shiftEs(w.id).map(e => `<i style="left:${Math.min(99, Math.max(0, (e.a - w.a) / dur * 100))}%;width:${Math.max(.8, Math.min(100, (e.b - e.a) / dur * 100))}%;background:${colorOf(pidOf(e))}"></i>`).join('')}${(w.k || []).map(k => `<i style="left:${Math.min(99, Math.max(0, (k[0] - w.a) / dur * 100))}%;width:${Math.max(.8, Math.min(100, (k[1] - k[0]) / dur * 100))}%;background:repeating-linear-gradient(135deg,rgba(255,182,72,.7) 0 3px,rgba(255,182,72,.15) 3px 6px)"></i>`).join('')}</div>` +
     (s.nbr ? `<div class="hint" style="margin-bottom:4px"><span style="color:var(--amb)">☕</span> перерывы ${fh(s.brk)}${s.nbr > 1 ? ' · ' + s.nbr + ' шт.' : ''}</div>` : '') +
-    s.tasks.map(x => `<div class="line"><span>${dot(colorOf((task(x.t) || {}).p))}${esc(tname(x.t))} <span class="hint">${esc(pname(x.t))}</span>${x.done ? ' <span class="top">✓</span>' : ''}</span><span class="num hint">${fh(x.s)}</span></div>`).join('');
+    s.tasks.map(x => `<div class="line"><span>${dot(colorOf((task(x.t) || {}).p))}${esc(tname(x.t))} <span class="hint">${esc(pname(x.t))}</span>${(task(x.t) || {}).d ? ' <span class="top">✓</span>' : ''}</span><span class="num hint">${fh(x.s)}</span></div>`).join('');
   if (editable && !w.open) h += editW === w.id ? shiftEditor(w) : `<button class="btn alt" style="margin-top:10px;padding:10px" onclick="editW='${w.id}';render()">Изменить сессию</button>`;
   return h + '</div>';
 }
@@ -1277,9 +1402,11 @@ function shiftEditor(w) {
     ((w.k || []).length ? w.k.map((k, i) => `<div class="line"><span><span style="color:var(--amb)">☕</span> <span class="hint num">${ftime(k[0])}</span></span>
       <span class="inl"><input ${hmAttrs} value="${hm(k[1] - k[0])}" style="width:78px;margin:0;padding:8px;text-align:right" class="num" onchange="setBreakMin('${w.id}',${i},this.value)"><button class="x" onclick="delBreak('${w.id}',${i})">✕</button></span></div>`).join('')
       : '<div class="hint" style="padding:6px 0">Без перерывов</div>') +
-    `<div class="inl"><input id="wb-${w.id}" ${hmAttrs} placeholder="Перерыв, чч:мм" class="num"><button class="btn sm alt" onclick="addBreak('${w.id}')">+ Перерыв</button></div>` +
-    `<div class="lbl" style="margin-top:12px">Добавить задачу</div>${entryForm(w.id, Math.min(Math.max(w.a, ...es.map(e => e.b)), w.b - 60))}
-    <button class="btn del" onclick="delShift('${w.id}')">Удалить сессию</button>
+    (addBF === w.id ? `<div class="card addf" style="margin:8px 0 4px;padding:12px;background:var(--s2)"><div class="row" style="margin-bottom:6px"><span class="lbl">Добавить перерыв</span><button class="x" onclick="addBF=null;render()" aria-label="Закрыть">✕</button></div><div class="inl"><input id="wb-${w.id}" ${hmAttrs} placeholder="Перерыв, чч:мм" class="num"><button class="btn sm alt" onclick="addBreak('${w.id}')">+ Перерыв</button></div></div>`
+      : `<button class="btn alt" style="margin-top:6px" onclick="addBF='${w.id}';render()">+ Перерыв</button>`) +
+    (addEF === w.id ? `<div class="card addf" style="margin:12px 0 4px;padding:12px;background:var(--s2)"><div class="row" style="margin-bottom:6px"><span class="lbl">Добавить задачу</span><button class="x" onclick="addEF=null;render()" aria-label="Закрыть">✕</button></div>${entryForm(w.id, Math.max(w.a, ...es.map(e => e.b)), w.b)}</div>`
+      : `<button class="btn alt" style="margin-top:12px" onclick="addEF='${w.id}';render()">+ Добавить задачу</button>`) +
+    `<button class="btn del" onclick="delShift('${w.id}')">Удалить сессию</button>
     <button class="btn alt" onclick="editW=null;render()">Готово</button></div>`;
 }
 function pickProject(p) {
@@ -1347,7 +1474,7 @@ function viewHome() {
       <div class="hint" style="margin-bottom:10px">Общий таймер остановится${S.t && S.r ? ', таймер задачи тоже' : ''}.</div>
       <div class="two"><button class="btn alt" onclick="endAsk=false;render()">Отмена</button><button class="btn end" style="background:var(--red);color:#fff;border:0" onclick="endShift()">Завершить</button></div></div>`
       : `<button class="btn end" style="margin-top:8px" onclick="endAsk=true;render();const c=$('#endc');if(c)c.scrollIntoView({block:'nearest',behavior:'smooth'})">Завершить рабочую сессию</button>`;
-    return h;
+    return h + recentSessions([]);
   }
   const t0 = dayStart(now()), tw = W.filter(w => w.a >= t0), ted = sum(allE().filter(e => e.a >= t0)), tst = tw.reduce((x, w) => x + wWork(w), 0);
   const hr = new Date().getHours(), greet = hr >= 5 && hr < 12 ? 'Доброе утро' : hr >= 12 && hr < 18 ? 'Добрый день' : hr >= 18 && hr < 23 ? 'Добрый вечер' : 'Доброй ночи';
@@ -1370,7 +1497,14 @@ function viewHome() {
   if (ended) { const w = W.find(x => x.id === ended); if (w) h += `<h2>${endedLbl}</h2>` + shiftCard(w, true); }
   const rest = tw.filter(w => w.id !== ended);
   if (rest.length) h += `<h2>Сессии сегодня</h2>` + rest.slice().reverse().map(w => shiftCard(w, true)).join('');
-  return h;
+  return h + recentSessions(tw.map(w => w.id));
+}
+let recentN = 5;
+function recentSessions(skip) {
+  const list = W.filter(w => !skip.includes(w.id)).sort((a, b) => b.a - a.a);
+  if (!list.length) return '';
+  return `<h2>Последние сессии</h2>` + list.slice(0, recentN).map(w => shiftCard(w, true)).join('') +
+    (list.length > recentN ? `<button class="btn alt" onclick="recentN+=10;render()">Показать ещё (${list.length - recentN})</button>` : '');
 }
 
 let settings = false;
@@ -1487,7 +1621,28 @@ function openNewProj() {
   newPOpen = true; render();
   const el = $('#pager .page:nth-child(' + (fIdx + 1) + ') input[id^="np-n-"]'); if (el) { el.focus(); $('#app').scrollTop = 0; }
 }
+let dq = '', dTags = [];
+const pTagKeys = p => projTags(p).map(tagLabel);
+function doneFilter(list) {
+  const q = dq.trim().toLowerCase();
+  return list.filter(p => (!q || [p.n, p.nt || '', tagsTxt(p, ' '), (folder(p.f) || {}).n || ''].join(' ').toLowerCase().includes(q)) && dTags.every(k => pTagKeys(p).includes(k)));
+}
+function doneListHTML(list) {
+  const f = doneFilter(list);
+  return (f.length ? f.map(p => projCard(p, true)).join('') : `<div class="hint center" style="padding:24px 0 12px">${list.length ? 'Ничего не найдено' : 'Завершённых проектов пока нет'}</div>`) +
+    (f.length && (dq || dTags.length) ? `<div class="hint center" style="margin:8px 0">Найдено: ${f.length} из ${list.length}</div>` : '');
+}
+function doneSearch(list) {
+  // теги группами по категориям: в строке только значения, строка листается вбок
+  const groups = {}; list.forEach(p => projTags(p).forEach(x => { const g = groups[x.c || ''] = groups[x.c || ''] || new Map(); g.set(tagLabel(x), x.v); }));
+  const gk = Object.keys(groups).sort((a, b) => (a === '') - (b === '') || a.localeCompare(b, 'ru'));
+  return `<div class="inl" style="margin-top:2px"><input id="dq" type="search" placeholder="Поиск по завершённым" value="${esc(dq)}" oninput="dq=this.value;updDone()" enterkeyhint="search" onkeydown="if(event.key==='Enter')this.blur()">${dq || dTags.length ? `<button class="btn sm alt" onpointerdown="event.preventDefault()" onclick="dq='';dTags=[];render()">Сброс</button>` : ''}</div>` +
+    gk.map(c => `<div class="lbl" style="margin:4px 0 0 2px">${esc(c || 'Теги')}</div><div class="chips hs">${[...groups[c]].sort((a, b) => a[1].localeCompare(b[1], 'ru')).map(([k, v]) => `<button class="${dTags.includes(k) ? 'on' : ''}" onclick="togDTag(this.dataset.k)" data-k="${esc(k)}">${esc(v)}</button>`).join('')}</div>`).join('');
+}
+function updDone() { const el = $('#donelist'); if (!el) return render(); el.innerHTML = doneListHTML(P.filter(p => p.c).sort((x, y) => y.c - x.c)); if ($('#pager')) fitPager(); }
+function togDTag(k) { dTags = dTags.includes(k) ? dTags.filter(x => x !== k) : dTags.concat([k]); render(); }
 function projPage(list, fid, top) {
+  if (fid === DONE) return doneSearch(list) + `<div id="donelist">${doneListHTML(list)}</div>`;
   const rf = folder(fid), sub = rf ? ' в «' + esc(rf.n) + '»' : '';
   let h = top ? `<div class="card" style="border-color:rgba(74,140,255,.35)"><div class="row" style="margin-bottom:8px"><span class="lbl">Новый проект${sub}</span><button class="x" onclick="newPOpen=false;render()" aria-label="Закрыть">✕</button></div>${projectForm(rf ? fid : '')}</div>` : '';
   h += list.length ? list.map(p => projCard(p, !fid || fid === WAIT || fid === DONE)).join('') : `<div class="hint center" style="padding:28px 0 12px">${fid === WAIT ? 'Нет проектов в ожидании' : fid === DONE ? 'Завершённых проектов пока нет' : fid ? 'В этой папке пока нет проектов' : 'Пока нет проектов'}${top || fid === WAIT || fid === DONE ? '' : '<br>Нажми «+ Проект» вверху, чтобы создать'}</div>`;

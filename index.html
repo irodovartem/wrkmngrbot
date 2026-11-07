@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Рабочий таймер</title>
+<title>Work Manager</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Таймер">
+<meta name="apple-mobile-web-app-title" content="Work Manager">
 <meta name="theme-color" content="#0a0a0c">
 <script>
 // SDK Telegram нужен только внутри Telegram. В браузере не грузим: telegram.org из России может не открываться, а его ошибки всплывали как «Script error».
@@ -427,7 +427,7 @@ function showLogin() { document.querySelector('nav').style.display = 'none'; log
 function renderLogin() {
   const l = login || {}, url = l.code && l.bot ? `https://t.me/${l.bot}?start=login_${l.code}` : '';
   $('#app').innerHTML = `<div class="login"><div class="lg-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg></div>
-    <h2 style="margin:8px 0 6px">Рабочий таймер</h2>
+    <h2 style="margin:8px 0 6px">Work Manager</h2>
     <div class="hint" style="font-size:15px;line-height:1.5;margin-bottom:26px">Сессии, задачи, проекты и честная ставка за час.<br>Данные общие с приложением в Telegram.</div>
     ${l.err ? `<div class="hint" style="color:var(--amb);margin-bottom:12px">${esc(l.err)}</div><button class="btn" onclick="login=null;showLogin()">Попробовать ещё раз</button>`
       : url ? `<a class="btn" href="${url}" target="_blank" rel="noopener" onclick="login.wait=1;setTimeout(()=>{renderLogin();pollLogin()},300)">Войти через Telegram</a>
@@ -1288,7 +1288,7 @@ let bkSending = false;
 async function sendBackup(silent) {
   if (!BACKUP_URL || bkSending) return false;
   if (!R.on) { if (!silent) toast('Отправка в чат работает после входа через Telegram.'); return false; }
-  const d = new Date(), name = 'timer-backup-' + d.toLocaleDateString('sv') + '_' + String(d.getHours()).padStart(2, '0') + '-' + String(d.getMinutes()).padStart(2, '0') + '.json';
+  const d = new Date(), name = 'WorkManager-backup-' + d.toLocaleDateString('sv') + '_' + String(d.getHours()).padStart(2, '0') + '-' + String(d.getMinutes()).padStart(2, '0') + '.json';
   const caption = `💾 Резервная копия от ${fdate(now())} ${ftime(now())}${silent ? ' (автоматически)' : ''}\nПроектов: ${P.length}, задач: ${T.length}, сессий: ${W.length}\n\nВосстановить: ⚙ Настройки → Восстановить → выбрать этот файл`;
   bkSending = true; if (!silent) render();
   try {

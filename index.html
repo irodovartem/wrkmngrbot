@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Рабочий таймер</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Таймер">
+<meta name="theme-color" content="#0a0a0c">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{--bg:#0a0a0c;--s1:#131316;--s2:#1c1c21;--line:rgba(255,255,255,.07);--tx:#f3f3f5;--mut:#8a8a94;--dim:#4d4d56;--acc:#4a8cff;--acc-tx:#ffffff;--red:#ff5d5d;--amb:#ffb648;--mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace}
@@ -162,6 +170,12 @@ details.cdet summary .dot{margin:0 10px 0 auto}
 .chips.sug::-webkit-scrollbar{display:none}
 .chips.sug button{display:flex;gap:6px;align-items:baseline;flex:none;white-space:nowrap}
 .addf input,.addf select{background:var(--s1)}
+.login{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px 8px}
+.login .btn{display:block;text-decoration:none;max-width:340px}
+.lg-ico{width:76px;height:76px;border-radius:22px;background:linear-gradient(160deg,#5b9bff,#2f6fe6);display:grid;place-items:center;box-shadow:0 14px 40px rgba(74,140,255,.35)}
+.lg-ico svg{width:44px;height:44px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.spin{width:26px;height:26px;margin:18px auto 0;border-radius:50%;border:2.5px solid var(--s2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .chips label{border:1px solid var(--line);background:var(--s2);color:var(--tx);font-size:13px;padding:7px 11px;border-radius:10px;overflow:hidden}
 .chips label.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
 .trow.flash .tfg{animation:flash 1.6s ease-out}
@@ -229,7 +243,7 @@ nav button{position:relative;z-index:1;transition:color .25s}
 </nav>
 <script>
 // ▼▼▼ АДРЕС СЕРВЕРА ДЛЯ ОТПРАВКИ КОПИЙ В ЧАТ (Cloudflare Worker). Оставь пустым '', чтобы отключить. ▼▼▼
-const BACKUP_URL = 'https://worksessiontimer.irodovartem.workers.dev/';
+const BACKUP_URL = 'https://functions.yandexcloud.net/d4eud1osevdvjpoug3ph?p=';
 // ▲▲▲
 const tg = window.Telegram && Telegram.WebApp;
 const V = v => !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v));
@@ -241,6 +255,7 @@ function applyInsets() {
   document.documentElement.style.setProperty('--top', (full ? (sa.top || 0) + (ca.top || 0) : 0) + 'px');
   document.documentElement.style.setProperty('--tgb', ((sa.bottom || 0) + (ca.bottom || 0)) + 'px');
 }
+if (!(tg && tg.initData)) document.documentElement.style.setProperty('--top', 'env(safe-area-inset-top)');
 if (tg && V('8.0')) { ['fullscreenChanged', 'safeAreaChanged', 'contentSafeAreaChanged', 'viewportChanged'].forEach(ev => { try { tg.onEvent(ev, applyInsets); } catch {} }); applyInsets(); }
 function setFull(on) {
   if (!canFull) return;
@@ -250,31 +265,190 @@ function setFull(on) {
 const cloud = !!(tg && tg.initData && tg.CloudStorage && V('6.9'));
 const LS = 'st-';
 
-/* ===== Хранилище: Telegram CloudStorage (синхронизируется между устройствами) или localStorage в обычном браузере ===== */
-const store = {
+/* ===== Хранилище =====
+   Основное — сервер (общие данные для Telegram и сайта). Зеркало на устройстве — CloudStorage Telegram или localStorage браузера:
+   с него приложение работает без сети, а изменения догоняют сервер, когда связь появится. */
+const tgMode = !!(tg && tg.initData);
+const API = BACKUP_URL ? BACKUP_URL.replace(/\/?$/, '/') : '';
+const lsG = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsS = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+let token = lsG('st-token') || '', acct = (() => { try { return JSON.parse(lsG('st-acct') || 'null'); } catch { return null; } })();
+let LSP = LS; // префикс зеркала в браузере (у каждого аккаунта свой)
+const local = {
   async keys() {
     if (cloud) return new Promise((ok, no) => tg.CloudStorage.getKeys((e, k) => e ? no(e) : ok(k || [])));
-    return Object.keys(localStorage).filter(k => k.startsWith(LS)).map(k => k.slice(LS.length));
+    return Object.keys(localStorage).filter(k => k.startsWith(LSP)).map(k => k.slice(LSP.length));
   },
   async get(keys) {
     const out = {};
     for (let i = 0; i < keys.length; i += 40) {
       const part = keys.slice(i, i + 40);
       if (cloud) await new Promise((ok, no) => tg.CloudStorage.getItems(part, (e, v) => e ? no(e) : (Object.assign(out, v || {}), ok())));
-      else part.forEach(k => { const v = localStorage.getItem(LS + k); if (v != null) out[k] = v; });
+      else part.forEach(k => { const v = localStorage.getItem(LSP + k); if (v != null) out[k] = v; });
     }
     return out;
   },
   async set(k, v) {
     if (cloud) return new Promise((ok, no) => tg.CloudStorage.setItem(k, v, e => e ? no(e) : ok()));
-    localStorage.setItem(LS + k, v);
+    localStorage.setItem(LSP + k, v);
   },
   async del(keys) {
     if (!keys.length) return;
-    if (cloud) return new Promise((ok, no) => tg.CloudStorage.removeItems(keys, e => e ? no(e) : ok()));
-    keys.forEach(k => localStorage.removeItem(LS + k));
+    if (cloud) { for (let i = 0; i < keys.length; i += 40) await new Promise((ok, no) => tg.CloudStorage.removeItems(keys.slice(i, i + 40), e => e ? no(e) : ok())); return; }
+    keys.forEach(k => localStorage.removeItem(LSP + k));
   }
 };
+const authBody = () => tgMode ? { initData: tg.initData } : { token };
+async function api(path, body) {
+  const r = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify(Object.assign(authBody(), body || {})) });
+  const j = await r.json().catch(() => ({ ok: false, error: 'Сервер ответил ' + r.status }));
+  if (r.status === 401 || j.error === 'auth') { const e = new Error('Нужно войти заново'); e.auth = true; throw e; }
+  if (!j.ok) throw new Error(j.error || 'ошибка сервера');
+  return j;
+}
+// R — связь с сервером: data — все ключи аккаунта, pend — изменения, ещё не отправленные на сервер
+const R = { on: false, ok: false, synced: false, data: null, rev: 0, pend: {}, t: null, busy: false };
+const pendKey = () => 'st-pend-' + (tgMode ? ((tg.initDataUnsafe || {}).user || {}).id : (acct || {}).id);
+const savePend = () => lsS(pendKey(), Object.keys(R.pend).length ? JSON.stringify(R.pend) : null);
+const hasPend = () => Object.keys(R.pend).length > 0;
+async function flush() {
+  clearTimeout(R.t); R.t = null;
+  if (R.busy) { R.t = setTimeout(flush, 500); return; }
+  const keys = Object.keys(R.pend); if (!keys.length) return;
+  R.busy = true;
+  const snap = {}; keys.slice(0, 150).forEach(k => snap[k] = R.pend[k]);
+  const set = {}, del = []; for (const [k, v] of Object.entries(snap)) v === null ? del.push(k) : set[k] = v;
+  let again = 300;
+  try {
+    const j = await api('kv', { op: 'batch', set, del }); R.rev = j.rev; R.ok = true;
+    for (const k of Object.keys(snap)) if (R.pend[k] === snap[k]) delete R.pend[k];
+    savePend();
+  } catch (e) { R.ok = false; if (e.auth) { R.busy = false; return authLost(); } again = 15000; }
+  R.busy = false; syncMark();
+  if (hasPend() && !R.t) R.t = setTimeout(flush, again);
+}
+const queueRemote = (k, v) => { R.pend[k] = v; savePend(); if (!R.t) R.t = setTimeout(flush, 400); };
+const store = {
+  async keys() { return R.on && R.data ? Object.keys(R.data) : local.keys(); },
+  async get(keys) { if (R.on && R.data) { const o = {}; keys.forEach(k => { if (R.data[k] != null) o[k] = R.data[k]; }); return o; } return local.get(keys); },
+  async set(k, v) { if (!R.on) return local.set(k, v); if (R.data) R.data[k] = v; queueRemote(k, v); local.set(k, v).catch(() => {}); },
+  async del(keys) { if (!keys.length) return; if (!R.on) return local.del(keys); keys.forEach(k => { if (R.data) delete R.data[k]; queueRemote(k, null); }); local.del(keys).catch(() => {}); }
+};
+const DATA_RE = /^(S$|B$|O$|P-|T-|e-|w-|F-)/;
+// подключение к серверу при запуске
+async function connect() {
+  if (!API || (!tgMode && !token)) return;
+  if (!tgMode && acct) LSP = 'sm' + acct.id + '-';
+  R.on = true;
+  try { R.pend = JSON.parse(lsG(pendKey()) || '{}') || {}; } catch { R.pend = {}; }
+  try { await pullAll(); } catch (e) {
+    if (e.auth && !tgMode) return authLost(true);
+    R.ok = false; R.synced = false; // нет связи — работаем с зеркалом; когда связь появится, всё сверим с сервером
+    R.data = await local.get((await local.keys()).filter(k => DATA_RE.test(k) || k === 'M'));
+    for (const [k, v] of Object.entries(R.pend)) v === null ? delete R.data[k] : R.data[k] = v;
+    if (hasPend() && !R.t) R.t = setTimeout(flush, 15000);
+  }
+}
+// полная сверка с сервером: отправить неотправленное, забрать всё, при первом запуске в Telegram — перенести данные
+async function pullAll() {
+  let j = await api('kv', { op: 'all' });
+  if (tgMode && !(j.data || {}).M) { // первый раз: всё самое свежее лежит в облаке Telegram (включая правки без сети)
+    R.data = j.data || {}; R.rev = j.rev; R.ok = true; R.pend = {}; savePend(); await migrateFromTg();
+  } else {
+    if (hasPend()) { await flush(); if (hasPend()) throw new Error('offline'); j = await api('kv', { op: 'all' }); }
+    R.data = j.data || {}; R.rev = j.rev; R.ok = true;
+  }
+  if (!tgMode && j.user) { acct = Object.assign(acct || {}, j.user); lsS('st-acct', JSON.stringify(acct)); }
+  R.synced = true; setTimeout(syncMirror, 4000);
+}
+// первый запуск в Telegram после обновления: переносим данные из облака Telegram на сервер
+async function migrateFromTg() {
+  const tk = (await local.keys()).filter(k => DATA_RE.test(k)), sk = Object.keys(R.data).filter(k => DATA_RE.test(k));
+  let useTg = tk.length > 0;
+  if (tk.length && sk.length) useTg = await modal('В аккаунте уже есть данные с сайта, а в Telegram — свои. Какие оставить? Вторые будут заменены.', [{ t: 'С сайта', v: false }, { t: 'Из Telegram', v: true }]);
+  if (useTg) {
+    const v = await local.get(tk);
+    sk.forEach(k => { delete R.data[k]; R.pend[k] = null; });
+    Object.entries(v).forEach(([k, x]) => { R.data[k] = x; R.pend[k] = x; });
+  }
+  R.data.M = '1'; R.pend.M = '1'; savePend();
+  while (hasPend()) { const n = Object.keys(R.pend).length; await flush(); if (Object.keys(R.pend).length >= n) break; }
+}
+// зеркало на устройстве догоняет сервер (в фоне)
+async function syncMirror() {
+  if (!R.on || !R.ok || !R.data) return;
+  try {
+    const have = (await local.keys()).filter(k => DATA_RE.test(k) || k === 'M'), cur = await local.get(have);
+    for (const [k, v] of Object.entries(R.data)) if (cur[k] !== v) await local.set(k, v);
+    const extra = have.filter(k => !(k in R.data)); if (extra.length) await local.del(extra);
+  } catch {}
+}
+// изменения с другого устройства
+async function pollRev() {
+  if (!R.on || document.hidden) return;
+  if (!R.synced) { try { await pullAll(); await reloadState(); } catch (e) { if (e.auth && !tgMode) authLost(); } syncMark(); return; }
+  try {
+    const j = await api('kv', { op: 'rev' }); R.ok = true;
+    if (hasPend()) flush();
+    else if (j.rev !== R.rev && !R.busy) await refreshAll();
+  } catch (e) { R.ok = false; if (e.auth && !tgMode) authLost(); }
+  syncMark();
+}
+async function refreshAll() {
+  const a = document.activeElement;
+  if (document.querySelector('.mback.on') || (a && a.matches && a.matches('input,textarea,select'))) return; // не мешаем, попробуем позже
+  const j = await api('kv', { op: 'all' }); if (hasPend()) return;
+  R.data = j.data || {}; R.rev = j.rev;
+  await reloadState(); setTimeout(syncMirror, 2000);
+}
+async function reloadState() { P = []; T = []; E = []; W = []; F = []; S = null; opt = DEF_OPT(); Object.keys(cache).forEach(k => delete cache[k]); await load(); render(); }
+setInterval(pollRev, 30000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { pollRev(); if (login) pollLogin(); } else if (hasPend()) flush(); });
+addEventListener('online', () => { if (hasPend()) flush(); pollRev(); });
+function syncMark() { const el = $('#syncst'); if (el) el.innerHTML = syncTxt(); }
+const syncTxt = () => !R.on ? '' : R.ok && !hasPend() ? '<span style="color:var(--acc)">●</span> Синхронизировано' : hasPend() ? '<span style="color:var(--amb)">●</span> Есть неотправленные изменения — отправятся, когда будет связь' : '<span style="color:var(--amb)">●</span> Нет связи с сервером — работаю на устройстве';
+
+/* ===== Вход на сайте через Telegram ===== */
+let login = null; // { code, bot, at, err }
+function authLost() { if (tgMode) return; R.on = false; token = ''; lsS('st-token', null); showLogin(); }
+async function newLoginCode() {
+  try {
+    const r = await fetch(API + 'auth/start', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: '{}' });
+    const j = await r.json(); if (!j.ok) throw new Error(j.error || 'ошибка');
+    login = { code: j.code, bot: j.bot, at: now(), err: '' };
+  } catch (e) { login = { err: /fetch|network|load failed/i.test(String(e && e.message)) ? 'Нет связи с сервером. Проверь интернет.' : String((e && e.message) || e) }; }
+  renderLogin();
+}
+function showLogin() { document.querySelector('nav').style.display = 'none'; login = login || {}; renderLogin(); if (!login.code) newLoginCode(); }
+function renderLogin() {
+  const l = login || {}, url = l.code && l.bot ? `https://t.me/${l.bot}?start=login_${l.code}` : '';
+  $('#app').innerHTML = `<div class="login"><div class="lg-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg></div>
+    <h2 style="margin:8px 0 6px">Рабочий таймер</h2>
+    <div class="hint" style="font-size:15px;line-height:1.5;margin-bottom:26px">Сессии, задачи, проекты и честная ставка за час.<br>Данные общие с приложением в Telegram.</div>
+    ${l.err ? `<div class="hint" style="color:var(--amb);margin-bottom:12px">${esc(l.err)}</div><button class="btn" onclick="login=null;showLogin()">Попробовать ещё раз</button>`
+      : url ? `<a class="btn" href="${url}" target="_blank" rel="noopener" onclick="login.wait=1;setTimeout(()=>{renderLogin();pollLogin()},300)">Войти через Telegram</a>
+        ${l.wait ? `<div class="hint" style="margin-top:16px">Ждём подтверждения в Telegram…<br>Нажми там «Старт», а потом «✅ Подтвердить вход» и вернись сюда.</div><div class="spin"></div>` : '<div class="hint" style="margin-top:14px">Откроется бот — он попросит подтвердить вход.</div>'}`
+      : '<div class="spin"></div>'}</div>`;
+}
+let pollT = null;
+async function pollLogin() {
+  clearTimeout(pollT); if (!login || !login.code || document.hidden) return;
+  if (now() - login.at > 540) return newLoginCode();
+  try {
+    const r = await fetch(API + 'auth/poll', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ code: login.code }) });
+    const j = await r.json();
+    if (j.ok && j.token) { token = j.token; acct = j.user; lsS('st-token', token); lsS('st-acct', JSON.stringify(acct)); login = null; document.querySelector('nav').style.display = ''; return startApp(); }
+    if (!j.ok) return newLoginCode();
+  } catch {}
+  if (login && login.wait) pollT = setTimeout(pollLogin, 2000);
+}
+async function logout() {
+  if (!(await ask('Выйти из аккаунта на этом устройстве? Данные останутся в аккаунте — войдёшь снова, и всё будет на месте.', 'Выйти'))) return;
+  if (hasPend()) await flush();
+  try { await fetch(API + 'auth/logout', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ token }) }); } catch {}
+  try { Object.keys(localStorage).filter(k => k.startsWith(LSP)).forEach(k => localStorage.removeItem(k)); } catch {}
+  lsS(pendKey(), null); lsS('st-token', null); lsS('st-acct', null); location.reload();
+}
 
 /* ===== Утилиты ===== */
 const $ = s => document.querySelector(s);
@@ -1109,12 +1283,12 @@ async function restore() {
 let bkSending = false;
 async function sendBackup(silent) {
   if (!BACKUP_URL || bkSending) return false;
-  if (!cloud) { if (!silent) toast('Отправка в чат работает только внутри Telegram — открой приложение через кнопку бота.'); return false; }
+  if (!R.on) { if (!silent) toast('Отправка в чат работает после входа через Telegram.'); return false; }
   const d = new Date(), name = 'timer-backup-' + d.toLocaleDateString('sv') + '_' + String(d.getHours()).padStart(2, '0') + '-' + String(d.getMinutes()).padStart(2, '0') + '.json';
   const caption = `💾 Резервная копия от ${fdate(now())} ${ftime(now())}${silent ? ' (автоматически)' : ''}\nПроектов: ${P.length}, задач: ${T.length}, сессий: ${W.length}\n\nВосстановить: ⚙ Настройки → Восстановить → выбрать этот файл`;
   bkSending = true; if (!silent) render();
   try {
-    const r = await fetch(BACKUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ initData: tg.initData, name, caption, data: backupData() }) });
+    const r = await fetch(BACKUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify(Object.assign(authBody(), { name, caption, data: backupData() })) });
     const j = await r.json().catch(() => ({ ok: false, error: 'Сервер ответил ' + r.status }));
     if (!j.ok) throw new Error(j.error || 'неизвестная ошибка');
     lastBk = now(); persist(() => store.set('B', String(lastBk)));
@@ -1132,14 +1306,14 @@ async function sendBackup(silent) {
 let repSending = false;
 async function sendReport() {
   if (!BACKUP_URL || repSending) return;
-  if (!cloud) return toast('Отправка в чат работает только внутри Telegram — открой приложение через кнопку бота.');
+  if (!R.on) return toast('Отправка в чат работает после входа через Telegram.');
   const D = periodData(), r = D.r, d0 = new Date(r.a * 1000);
   const iso = d0.toLocaleDateString('sv'), dl = new Date(r.last * 1000).toLocaleDateString('sv');
   const name = { week: `otchet-nedelya-${iso}`, month: `otchet-mesyac-${iso.slice(0, 7)}`, q: `otchet-3-mesyaca-${iso.slice(0, 7)}_${dl.slice(0, 7)}`, half: `otchet-polgoda-${iso.slice(0, 7)}_${dl.slice(0, 7)}`, year: `otchet-god-${iso.slice(0, 4)}` }[sMode] + '.txt';
   const caption = `📊 Отчёт за ${sMode === 'month' || sMode === 'year' ? '' : PER[sMode][1] + ' '}${r.label}${sMode === 'year' ? ' год' : ''}\nЗаработано (закрытые проекты): ${money(D.earned)}${D.cSec ? ' · ' + money(D.avg) + '/ч' : ''}\nВ задачах: ${fh(D.sec)}${D.openSec ? ' (из них ' + fh(D.openSec) + ' в незакрытых)' : ''} · в сессиях: ${fh(D.studio)}, сессий: ${D.ws.length}`;
   repSending = true; render();
   try {
-    const res = await fetch(BACKUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ initData: tg.initData, name, caption, data: '﻿' + reportText() }) });
+    const res = await fetch(BACKUP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify(Object.assign(authBody(), { name, caption, data: '﻿' + reportText() })) });
     const j = await res.json().catch(() => ({ ok: false, error: 'Сервер ответил ' + res.status }));
     if (!j.ok) throw new Error(j.error || 'неизвестная ошибка');
     toast('Готово — отчёт уже в чате с ботом.');
@@ -1152,7 +1326,7 @@ async function sendReport() {
 }
 function autoBackup() {
   const per = opt.autoBk === 'day' ? 86400 : opt.autoBk === 'week' ? 7 * 86400 : 0;
-  if (per && BACKUP_URL && cloud && now() - lastBk > per - 3600) sendBackup(true);
+  if (per && BACKUP_URL && R.on && now() - lastBk > per - 3600) sendBackup(true);
 }
 function chatBkCard() {
   if (!BACKUP_URL) return '';
@@ -1556,11 +1730,17 @@ function appCard() {
     <label class="tgl"><input type="checkbox" ${opt.full === false ? '' : 'checked'} onchange="opt.full=this.checked;saveO();setFull(this.checked);render()" aria-label="Во весь экран"><i></i></label></div>`;
   return h ? `<div class="card"><div class="lbl">Приложение</div>${h}</div>` : '';
 }
+function accCard() {
+  const site = location.origin + location.pathname;
+  if (!R.on) return `<div class="card"><div class="lbl">Где хранятся данные</div><div class="hint" style="margin-top:6px;color:var(--amb)">Нет связи с сервером синхронизации — данные сейчас только на этом устройстве.</div></div>`;
+  return `<div class="card"><div class="lbl">Аккаунт</div>
+    <div class="row" style="margin-top:8px"><span>${esc(tgMode ? ((u => u ? (u.username ? '@' + u.username : u.first_name) : '')(((tg.initDataUnsafe || {}).user))) : (acct && acct.name) || 'Telegram')}<div class="hint">вход через Telegram</div></span>${tgMode ? '' : '<button class="btn sm alt" style="margin:0" onclick="logout()">Выйти</button>'}</div>
+    <div class="hint" id="syncst" style="margin-top:10px">${syncTxt()}</div>
+    <div class="hint" style="margin-top:8px">${tgMode ? `Те же данные — на сайте: <a href="${esc(site)}" target="_blank" style="color:var(--acc)">${esc(site.replace(/^https?:\/\//, ''))}</a>. Войди там через Telegram.` : 'Те же данные — в приложении в Telegram. Копии и отчёты приходят в чат с ботом.'}</div></div>`;
+}
 function viewSettings() {
-  return `<h2>Настройки</h2>` + appCard() + foldersCard() + catsCard() + backupCard() + chatBkCard() +
-    `<div class="card"><div class="lbl">Где хранятся данные</div>` + (cloud
-      ? `<div class="hint" style="margin-top:6px">Данные привязаны к твоему аккаунту Telegram и хранятся в облаке Telegram.</div>`
-      : `<div class="hint" style="margin-top:6px;color:var(--amb)">Связь с Telegram не установлена — данные сейчас хранятся только на этом устройстве.</div><div class="hint" style="margin-top:6px">${!tg ? 'Не загрузился модуль Telegram (telegram-web-app.js). Открой приложение через кнопку бота; если не помогло — проверь интернет/VPN и обнови Telegram.' : !tg.initData ? 'Приложение открыто не через кнопку бота.' : 'Версия Telegram устарела (' + esc(tg.version || '?') + '), обнови приложение.'}</div>`) + `</div>` + resetCard();
+  return `<h2>Настройки</h2>` + accCard() + appCard() + foldersCard() + catsCard() + backupCard() + chatBkCard() +
+    resetCard();
 }
 function projCard(p, showF) {
   const s = projSec(p.id), done = T.filter(t => t.p === p.id && t.d).length, all = T.filter(t => t.p === p.id).length;
@@ -1795,6 +1975,7 @@ document.addEventListener('keydown', e => {
 window.addEventListener('resize', acPlace); if (window.visualViewport) visualViewport.addEventListener('resize', acPlace);
 document.addEventListener('scroll', e => { if (e.target !== acBox) acPlace(); }, true);
 function render() {
+  if (!tgMode && API && !token) { if (!$('.login')) showLogin(); return; } // в браузере без входа — только экран входа
   acClose();
   ['home', 'todo', 'proj', 'stat'].forEach(t => $('#n-' + t).classList.toggle('on', t === tab)); placePill();
   const p = cur && proj(cur);
@@ -1830,7 +2011,18 @@ function showErr(m) {
 window.addEventListener('error', e => showErr(e.message || 'неизвестная'));
 window.addEventListener('unhandledrejection', e => showErr((e.reason && e.reason.message) || String(e.reason)));
 initSwipe(); initPill();
-load().then(async () => { if (opt.full !== false) setFull(true); try { if (mobile && V('8.0')) tg.lockOrientation(); } catch {} render(); autoBackup(); }).catch(e => { $('#app').innerHTML = '<div class="card">Не удалось загрузить данные: ' + esc((e && e.message) || e) + '</div>'; });
+async function startApp() {
+  try {
+    if (!tgMode && API && !token) return showLogin();
+    await connect(); if (!tgMode && API && !token) return;
+    P = []; T = []; E = []; W = []; F = []; S = null; opt = DEF_OPT(); Object.keys(cache).forEach(k => delete cache[k]);
+    await load();
+    if (opt.full !== false) setFull(true); try { if (mobile && V('8.0')) tg.lockOrientation(); } catch {}
+    document.querySelector('nav').style.display = ''; render(); autoBackup();
+  } catch (e) { $('#app').innerHTML = '<div class="card">Не удалось загрузить данные: ' + esc((e && e.message) || e) + '</div>'; }
+}
+startApp();
+if (!tgMode && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>

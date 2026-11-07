@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Таймер">
 <meta name="theme-color" content="#0a0a0c">
 <script>
@@ -260,21 +260,6 @@ function applyInsets() {
   document.documentElement.style.setProperty('--tgb', ((sa.bottom || 0) + (ca.bottom || 0)) + 'px');
 }
 if (!(tg && tg.initData)) document.documentElement.style.setProperty('--top', 'env(safe-area-inset-top)');
-// Иконка на экране «Домой» (iOS): там окно уже может заканчиваться над полоской жестов, и отступ снизу получается двойным.
-// Меряем по факту: сколько окна не хватает до низа экрана — на столько уменьшаем нижний отступ.
-const standalone = !(tg && tg.initData) && (navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
-function fitStandalone() {
-  if (!standalone) return;
-  const de = document.documentElement, pr = document.createElement('div');
-  pr.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:0;padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none';
-  document.body.appendChild(pr); const E = pr.getBoundingClientRect().height; pr.remove();
-  const H = window.innerHeight, big = Math.max(screen.height, screen.width), sh = window.innerHeight >= window.innerWidth ? big : Math.min(screen.height, screen.width);
-  const lost = Math.max(0, sh - H);                       // сколько пикселей снизу «съела» система
-  const bot = E > 0 ? Math.min(Math.max(0, Math.round(E - lost)), 26) : 0;   // у полоски жестов хватает ~26 px — больше iOS иногда отдаёт по ошибке
-  de.style.setProperty('--bot', bot + 'px');
-  document.body.style.height = H + 'px'; document.body.style.bottom = 'auto';   // обход бага iOS 26 с «плавающим» низом
-}
-if (standalone) { fitStandalone(); addEventListener('resize', fitStandalone); addEventListener('orientationchange', () => setTimeout(fitStandalone, 300)); document.addEventListener('focusout', () => setTimeout(fitStandalone, 350)); document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(fitStandalone, 100); }); if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (!document.activeElement || !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) fitStandalone(); }); }
 if (tg && V('8.0')) { ['fullscreenChanged', 'safeAreaChanged', 'contentSafeAreaChanged', 'viewportChanged'].forEach(ev => { try { tg.onEvent(ev, applyInsets); } catch {} }); applyInsets(); }
 function setFull(on) {
   if (!canFull) return;

@@ -180,14 +180,14 @@ details.cdet summary .dot{margin:0 10px 0 auto}
 .chips label.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
 .trow.flash .tfg{animation:flash 1.6s ease-out}
 @keyframes flash{0%,30%{box-shadow:0 0 0 2px var(--acc)}100%{box-shadow:0 0 0 0 transparent}}
-#t2{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;background:#26262d;border:1px solid var(--line);color:var(--tx);font-size:14px;padding:9px 16px;border-radius:12px;z-index:61;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap}
+#t2{position:fixed;left:50%;bottom:calc(84px + var(--bot));transform:translate(-50%,20px);opacity:0;background:#26262d;border:1px solid var(--line);color:var(--tx);font-size:14px;padding:9px 16px;border-radius:12px;z-index:61;pointer-events:none;transition:transform .25s,opacity .25s;white-space:nowrap}
 #t2.on{opacity:1;transform:translate(-50%,0)}
 .chips button{border:1px solid var(--line);background:var(--s2);color:var(--tx);font:inherit;font-size:13px;padding:7px 11px;border-radius:10px}
 .chips button.on{background:var(--acc);color:var(--acc-tx);border-color:var(--acc)}
 .tgrp{margin:18px 0 2px 4px;display:flex;justify-content:space-between}
 .note{white-space:pre-wrap;color:var(--mut);font-size:14px;margin:-2px 0 10px;cursor:pointer}
 textarea.note-ed{font-family:inherit;font-size:14px;line-height:1.45;color:var(--tx);min-height:90px;margin:0 0 10px}
-#undo{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px 12px 16px;border-radius:14px;background:#26262d;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.5);transform:translateY(140%);opacity:0;transition:transform .25s ease,opacity .25s ease;pointer-events:none}
+#undo{position:fixed;left:12px;right:12px;bottom:calc(76px + var(--bot));z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px 12px 16px;border-radius:14px;background:#26262d;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.5);transform:translateY(140%);opacity:0;transition:transform .25s ease,opacity .25s ease;pointer-events:none}
 #undo.on{transform:none;opacity:1;pointer-events:auto}
 #undo .uw{display:flex;align-items:center;gap:12px}
 .uring{width:20px;height:20px;flex:none;transform:rotate(-90deg)}
@@ -256,6 +256,21 @@ function applyInsets() {
   document.documentElement.style.setProperty('--tgb', ((sa.bottom || 0) + (ca.bottom || 0)) + 'px');
 }
 if (!(tg && tg.initData)) document.documentElement.style.setProperty('--top', 'env(safe-area-inset-top)');
+// Иконка на экране «Домой» (iOS): там окно уже может заканчиваться над полоской жестов, и отступ снизу получается двойным.
+// Меряем по факту: сколько окна не хватает до низа экрана — на столько уменьшаем нижний отступ.
+const standalone = !(tg && tg.initData) && (navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+function fitStandalone() {
+  if (!standalone) return;
+  const de = document.documentElement, pr = document.createElement('div');
+  pr.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:0;padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none';
+  document.body.appendChild(pr); const E = pr.getBoundingClientRect().height; pr.remove();
+  const H = window.innerHeight, big = Math.max(screen.height, screen.width), sh = window.innerHeight >= window.innerWidth ? big : Math.min(screen.height, screen.width);
+  const lost = Math.max(0, sh - H);                       // сколько пикселей снизу «съела» система
+  const bot = Math.max(0, Math.round(E - lost));
+  de.style.setProperty('--bot', bot + 'px');
+  document.body.style.height = H + 'px'; document.body.style.bottom = 'auto';   // обход бага iOS 26 с «плавающим» низом
+}
+if (standalone) { fitStandalone(); addEventListener('resize', fitStandalone); addEventListener('orientationchange', () => setTimeout(fitStandalone, 300)); document.addEventListener('focusout', () => setTimeout(fitStandalone, 350)); document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(fitStandalone, 100); }); if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (!document.activeElement || !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) fitStandalone(); }); }
 if (tg && V('8.0')) { ['fullscreenChanged', 'safeAreaChanged', 'contentSafeAreaChanged', 'viewportChanged'].forEach(ev => { try { tg.onEvent(ev, applyInsets); } catch {} }); applyInsets(); }
 function setFull(on) {
   if (!canFull) return;

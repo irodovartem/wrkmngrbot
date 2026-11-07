@@ -12,7 +12,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Таймер">
 <meta name="theme-color" content="#0a0a0c">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// SDK Telegram нужен только внутри Telegram. В браузере не грузим: telegram.org из России может не открываться, а его ошибки всплывали как «Script error».
+(function () { var inTg = /tgWebApp/.test(location.hash) || !!window.TelegramWebviewProxy || window.parent !== window; try { if (inTg) sessionStorage.setItem('in-tg', '1'); else inTg = sessionStorage.getItem('in-tg') === '1'; } catch (e) {}
+  if (inTg) document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>'); })();
+</script>
 <style>
 :root{--bg:#0a0a0c;--s1:#131316;--s2:#1c1c21;--line:rgba(255,255,255,.07);--tx:#f3f3f5;--mut:#8a8a94;--dim:#4d4d56;--acc:#4a8cff;--acc-tx:#ffffff;--red:#ff5d5d;--amb:#ffb648;--mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace}
 html{color-scheme:dark}
@@ -266,7 +270,7 @@ function fitStandalone() {
   document.body.appendChild(pr); const E = pr.getBoundingClientRect().height; pr.remove();
   const H = window.innerHeight, big = Math.max(screen.height, screen.width), sh = window.innerHeight >= window.innerWidth ? big : Math.min(screen.height, screen.width);
   const lost = Math.max(0, sh - H);                       // сколько пикселей снизу «съела» система
-  const bot = Math.max(0, Math.round(E - lost));
+  const bot = E > 0 ? Math.min(Math.max(0, Math.round(E - lost)), 26) : 0;   // у полоски жестов хватает ~26 px — больше iOS иногда отдаёт по ошибке
   de.style.setProperty('--bot', bot + 'px');
   document.body.style.height = H + 'px'; document.body.style.bottom = 'auto';   // обход бага iOS 26 с «плавающим» низом
 }
@@ -2023,7 +2027,7 @@ function showErr(m) {
   const d = document.createElement('div'); d.className = 'errbar'; d.textContent = 'Ошибка: ' + m;
   d.onclick = () => d.remove(); document.body.appendChild(d); setTimeout(() => d.remove(), 8000);
 }
-window.addEventListener('error', e => showErr(e.message || 'неизвестная'));
+window.addEventListener('error', e => { if (!e.message || /^Script error\.?$/i.test(e.message) || (e.filename && !e.filename.startsWith(location.origin))) return; showErr(e.message); });
 window.addEventListener('unhandledrejection', e => showErr((e.reason && e.reason.message) || String(e.reason)));
 initSwipe(); initPill();
 async function startApp() {
